@@ -1,0 +1,12 @@
+* {
+	font-family: Helvetica, sans-serif;
+}
+
+body {
+	margin: 200px;
+	font-size: 4vw;
+}
+
+h1, p  {
+	text-align: center
+}
