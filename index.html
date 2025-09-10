@@ -4,9 +4,28 @@
 		<title>Josh's Site</title>
 		<link rel="stylesheet" href="styles.css">
 	</head>
-	<body>
-		<h1>Hello World!</h1>
-		<p>This is my website. Check out the exercises below:</p>
-		<a href="01_handmadeweb/quote1.html">Handmade Web</a>
+	<body id="body">
+		<h1 id="title">Hello World!</h1>
+		<p>This is my website.</p>
+		<p><a href="01_handmadeweb/quote1.html">01: Handmade Web</a></p>
+
+		<script>
+			const title = document.getElementById("title");
+			const body = document.getElementById("body");
+			document.addEventListener("mouseover", (event) => {
+				if (event.target === title) {
+					title.style.transform = "scale(1.1)";
+					title.style.opacity = "0.3";
+					body.style.backgroundColor = "black";
+				}
+			});
+			document.addEventListener("mouseout", (event) => {
+				if (event.target === title) {
+					title.style.transform = "scale(1)";
+					title.style.opacity = "1";
+					body.style.backgroundColor = "rgb(51, 47, 45)";
+				}
+			});
+		</script>
 	</body>
 </html>

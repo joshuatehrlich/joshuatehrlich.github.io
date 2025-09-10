@@ -1,12 +1,35 @@
 * {
 	font-family: Helvetica, sans-serif;
+	color: white;
 }
 
 body {
+	background-color: rgb(51, 47, 45);
 	margin: 200px;
-	font-size: 2vw;
+	font-size: 2rem;
+
+	transition: background-color 0.3s;
 }
 
-h1, p, a {
+h1, p {
 	text-align: center
+}
+
+a {
+	display: inline-block;
+
+	text-decoration: none;
+	color: rgb(255, 167, 177);
+	transition: color 0.3s;
+
+	font-weight: bold;
+}
+
+a:hover {
+	color: rgb(159, 124, 255);
+}
+
+#title {
+	transform: scale(1);
+	transition: 0.3s;
 }

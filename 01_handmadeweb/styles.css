@@ -1,7 +1,7 @@
 * {
 	font-family: Helvetica, sans-serif;
 	font-size: 1.5rem;
-	transition: 0.3s;
+	transition: transform 0.3s;
 }
 
 body {
@@ -20,6 +20,6 @@ a {
 }
 
 a:hover {
-	transform: scale(1.05);
+	transform: scale(1.02);
 	color:rgb(57, 43, 255);
 }
