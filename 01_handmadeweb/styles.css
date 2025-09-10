@@ -1,0 +1,25 @@
+* {
+	font-family: Helvetica, sans-serif;
+	font-size: 1.5rem;
+	transition: 0.3s;
+}
+
+body {
+	transform: translateX(0px) perspective(1000px) rotateX(0deg) rotateY(0deg);
+	margin: 10vw;
+}
+
+a {
+	display: inline-block;
+
+	color: rgb(253, 81, 101);
+	text-decoration: none;
+	font-weight: bold;
+
+	transform: scale(1) perspective(500px) rotateX(0deg) rotateY(0deg);
+}
+
+a:hover {
+	transform: scale(1.05);
+	color:rgb(57, 43, 255);
+}

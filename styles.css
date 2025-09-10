@@ -4,9 +4,9 @@
 
 body {
 	margin: 200px;
-	font-size: 4vw;
+	font-size: 2vw;
 }
 
-h1, p  {
+h1, p, a {
 	text-align: center
 }
