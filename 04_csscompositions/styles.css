@@ -233,6 +233,7 @@ a {
   background-color: rgb(79, 255, 196);
   transform: scale(2.4);
   mix-blend-mode: multiply;
+  transition: 1s;
 }
 .C03 .circle-grid .circle.a {
   background-color: rgb(255, 79, 79);
@@ -241,10 +242,32 @@ a {
   background-color: rgb(255, 255, 255);
   mix-blend-mode: normal;
 }
+.C03 .circle-grid .circle.b:hover {
+  scale: 1.9;
+}
+.C03 .circle-grid .circle.b:hover + .c {
+  scale: 1.9;
+  opacity: 0;
+}
 .C03 .circle-grid .circle.c {
   background-color: rgb(79, 79, 255);
+  pointer-events: none;
 }
 
+.C04 {
+  cursor: crosshair;
+}
+.C04 .desc {
+  position: absolute;
+  margin: auto;
+  left: 5vw;
+  opacity: 0.3;
+  transition: 1s;
+}
+.C04 .desc:hover {
+  opacity: 1;
+  transform: translatex(10px);
+}
 .C04 {
   position: absolute;
   top: 0;
@@ -277,9 +300,10 @@ a {
   background-color: rgba(255, 255, 255, 0);
   opacity: 0.2;
   padding: 0px;
+  cursor: grabbing;
 }
 .C04 .migrate-box .migrate:hover {
-  opacity: 1;
+  opacity: 1 !important;
   animation-play-state: paused;
   border-radius: 10%;
 }
@@ -290,46 +314,56 @@ a {
 }
 .C04 .migrate-box .migrate:focus {
   animation-play-state: paused;
-  opacity: 0.7;
+  opacity: 0.7 !important;
   border-radius: 50%;
+  cursor: wait;
 }
 .C04 .migrate-box .migrate.a {
   animation-delay: 0.1s;
-  display: none;
 }
 .C04 .migrate-box .migrate.b {
   animation-delay: 0.5s;
+  scale: 1.6;
+  opacity: 0.25;
 }
 .C04 .migrate-box .migrate.c {
   animation-delay: 0s;
+  scale: 0.9;
 }
 .C04 .migrate-box .migrate.d {
   animation-delay: 1.6s;
+  scale: 1;
 }
 .C04 .migrate-box .migrate.e {
   animation-delay: 0.8s;
+  scale: 2;
+  opacity: 0.3;
 }
 .C04 .migrate-box .migrate.f {
   animation-delay: 1s;
+  scale: 0.6;
+  opacity: 0.05;
 }
 .C04 .migrate-box .migrate.g {
   animation-delay: 0.2s;
+  scale: 1.1;
 }
 .C04 .migrate-box .migrate.h {
   animation-delay: 0.3s;
+  scale: 0.7;
+  opacity: 0.1;
 }
 .C04 .migrate-box .migrate.i {
   animation-delay: 1.3s;
-  display: none;
 }
 
 @keyframes migrateAnim {
   0% {
-    transform: translateX(-50vw) translateY(0px) scale(1) rotateX(45deg);
+    transform: translateX(-50vw) translateY(50vh) rotateZ(-40deg) rotateX(-45deg) scale(0.8);
     background-color: #000000;
   }
   100% {
-    transform: translateX(50vw) translateY(0px) scale(1) rotateX(-45deg);
+    transform: translateX(50vw) translateY(-50vh) rotateZ(-40deg) rotateX(45deg) scale(1);
     background-color: rgba(0, 0, 0, 0.5058823529);
   }
 }
