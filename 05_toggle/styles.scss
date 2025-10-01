@@ -1,0 +1,136 @@
+html {
+	font-family: 'Courier New', Courier, monospace;
+	background-color: rgb(255, 255, 255);
+	background-color: white;
+	transition: all 0.5s;
+	overflow: hidden;
+	&.entered {
+		background-color: rgb(0, 0, 0);
+	}
+}
+
+#controls {
+	// position: absolute;
+	// margin: auto;
+	// text-align: center;
+	// bottom: 19vh;
+	// left: 0; right: 0;
+	// width: 100vw;
+	font-size: 1.3rem;
+	opacity: 0.3;
+	font-weight: 1200;
+	margin-bottom: 10px;
+}
+
+#game {
+	position: absolute;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	margin: auto;
+	top: 0; left: 0; bottom: 0; right: 0;
+
+	row-gap: 40px;
+
+	z-index: 10;
+
+	transition: all 2s;
+
+	&.entered {
+		opacity: 0.0;
+		transform: perspective(1000px) translatez(1000px);
+	}
+}
+
+#textbar {
+	font-size: 1.7rem;
+	font-weight: normal;
+	color: rgb(0, 0, 0);
+
+	transition: all 0.2s;
+}
+
+#gamewindow {
+	background-color: rgba(255, 255, 255, 0);
+	width:380px;
+	height: 380px;
+
+	// border-radius: 1rem;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	row-gap: 10px;
+
+	transition: all 2s;
+
+	&.entered {
+		opacity: 0.0;
+	}
+}
+
+.loc_row {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	column-gap: 10px;
+}
+
+.location {
+	font-size: 1.5rem;
+	font-weight: lighter;
+	color: rgb(58, 58, 58);
+
+	background-color: rgb(230, 230, 230);
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	
+	transition: all 0.2s;
+
+	&.player {
+		font-weight: bold;
+		color: rgb(255, 255, 255) !important;
+		background-color: rgb(0, 0, 0);
+	}
+}
+
+#inside {
+	position: absolute;
+	bottom: 0; left: 0; right: 0;
+	height: 100vh;
+
+	background-color: rgba(0, 0, 0, 0);
+	color: rgb(255, 255, 255);
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+
+	z-index: 5;
+
+	opacity: 0;
+
+	transition: all 2s;
+
+	transform: perspective(1000px) translatez(-1000px);
+
+	text-align: center;
+
+	&.entered {
+		opacity: 1;
+		transform: perspective(1000px) translatez(0px);
+	}
+
+	h2 {
+		opacity: 0.3;
+	}
+}
