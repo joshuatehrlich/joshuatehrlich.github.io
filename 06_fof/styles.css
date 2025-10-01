@@ -1,0 +1,112 @@
+html {
+  background-color: rgb(247, 245, 241);
+  font-family: monospace;
+  cursor: crosshair;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#text-holder {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  white-space: pre;
+}
+#text-holder div {
+  transition: transform 0.5s;
+  transform: translateY(0px);
+  color: rgb(126, 126, 126);
+}
+#text-holder div div {
+  transition: all 0.2s;
+}
+
+.selectedLine {
+  font-weight: bold;
+  scale: 1.5;
+}
+
+.selectedLine2 {
+  font-weight: bold;
+  scale: 1.2;
+}
+
+.readingLine {
+  font-weight: bold !important;
+  scale: 2 !important;
+  color: black !important;
+  opacity: 1 !important;
+  font-style: normal !important;
+  transform: translateY(0px) scale3d(1.7, 1.7, 1) !important;
+}
+
+.readingLetter {
+  transform: translateY(-2px) scale3d(1.7, 1.7, 1) !important;
+}
+
+.bolded {
+  font-weight: lighter;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.bolded2 {
+  font-weight: bold;
+  opacity: 0.5;
+}
+
+@keyframes rescale {
+  0%, 100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.2;
+  }
+}
+.textLetter {
+  text-align: center;
+  animation: rescale 1s infinite;
+}
+
+.next {
+  position: absolute;
+  right: 60px;
+  bottom: 60px;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  color: black !important;
+  opacity: 0.5;
+}
+
+.title {
+  position: absolute;
+  left: 60px;
+  top: 60px;
+  font-size: 20px;
+  font-weight: bold;
+  color: black !important;
+  opacity: 0.5;
+  margin: 0;
+  padding: 0;
+}
+.title h1 {
+  margin: 0;
+  padding: 0;
+}
+.title h3 {
+  margin: 0;
+  padding: 0;
+}
+
+/*# sourceMappingURL=styles.css.map */
