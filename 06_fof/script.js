@@ -5,12 +5,18 @@ I have a theory about how the world works
 `;
 
 const sources = [
-	"source.md",
-	"source2.md"
+	"source2.md",
+	"source5.md",
+	"source3.md",
+	"source4.md",
+	"source.md"
 ]
 const titles = [
-	"unknown",
-	"rain"
+	"rain by jorge luis borges",
+	"oh the places you'll go by dr. seuss",
+	"excerpt from the little prince by antoine de saint-exupéry",
+	"setInterval() docs",
+	"ramblings used for testing"
 ]
 let currentSource = 0;
 
@@ -22,7 +28,32 @@ async function loadAndParseLines(source) {
     const normalizedText = rawText.replace(/\r\n|\r/g, "\n");
     const lines = normalizedText.split(/(?<=[.!?])|\n/)
         .map(line => line.trim())
-        .filter(line => line.length > 0);
+        .filter(line => line.length > 0)
+        .flatMap(line => {
+            // If line is longer than 120 chars, split it at spaces
+            if (line.length <= 420) return [line];
+            
+            const chunks = [];
+            let remaining = line;
+            
+            while (remaining.length > 120) {
+                // Find the last space before or at position 120
+                let splitPos = remaining.lastIndexOf(' ', 120);
+                
+                // If no space found, just split at 120
+                if (splitPos === -1) splitPos = 120;
+                
+                chunks.push(remaining.slice(0, splitPos).trim());
+                remaining = remaining.slice(splitPos).trim();
+            }
+            
+            // Add the remaining part
+            if (remaining.length > 0) {
+                chunks.push(remaining);
+            }
+            
+            return chunks;
+        });
     // const lines = normalizedText.split("\n");
     // console.log(lines);
     return lines;
