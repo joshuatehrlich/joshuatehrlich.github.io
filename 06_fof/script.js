@@ -16,7 +16,7 @@ const titles = [
 	"oh the places you'll go by dr. seuss",
 	"excerpt from the little prince by antoine de saint-exupéry",
 	"setInterval() docs",
-	"ramblings used for testing"
+	"ramblings used for testing..."
 ]
 let currentSource = 0;
 
