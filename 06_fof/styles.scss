@@ -14,6 +14,10 @@ body {
 	margin: 0;
 	padding: 0;
 	overflow: hidden;
+	
+	// Hardware acceleration hints
+	backface-visibility: hidden;
+	perspective: 1000px;
 }
 
 #text-holder {
@@ -27,36 +31,53 @@ body {
 	align-items: center;
 
 	white-space: pre;
+	
+	// Force GPU layer for entire text holder
+	transform: translate3d(0, 0, 0);
+	backface-visibility: hidden;
 
-	div { // for the lines
-		transition: transform 0.5s;
-		transform: translateY(0px);
+	// Columns (previously "lines")
+	.textColumn {
+		transition: transform 0.25s ease-out;
+		transform: translate3d(0, 0, 0) scale3d(1.3, 1.3, 1); // Scale up by default
 		color: rgb(126, 126, 126);
-
-		div { // for the letters
-			transition: all 0.2s;
+		will-change: auto;
+		
+		// Use pre to preserve whitespace and line breaks
+		white-space: pre;
+		line-height: 1.0; // Tight spacing for vertical alignment
+		text-align: center;
+		font-family: monospace;
+		
+		// Style for individual letters (when split into spans on hover)
+		.textLetter {
+			transition: transform 0.12s ease-out, opacity 0.12s, color 0.12s;
+			display: inline; // Keep inline for proper line breaks
+			line-height: 1.0;
 		}
 	}
 }
 
 .selectedLine {
 	font-weight: bold;
-	scale: 1.5;
+	transform: scale(1.5);
 }
 
 .selectedLine2 {
 	font-weight: bold;
-	scale: 1.2;
+	transform: scale(1.2);
 }
 
 .readingLine {
 	font-weight: bold !important;
-	scale: 1.5 !important;
+	// Don't override transform here - let animation handle it
 	color: black !important;
 	opacity: 1 !important;
 	font-style: normal !important;
-	// transform: translateY(0px) scale3d(1.3, 1.3, 1) !important;
-	// animation-play-state: paused?
+	
+	// Scale up the reading line letters for emphasis
+	transform: translate3d(0, 0, 0) scale3d(1.5, 1.5, 1) !important;
+	animation: none !important; // Override animation for cleaner look
 }
 
 .bolded {
@@ -71,13 +92,24 @@ body {
 }
 
 @keyframes rescale {
-	0%, 100% {transform: translateX(0px) scale3d(1.3, 1.3, 1);}
-	50% {transform: translateX(-1px) scale3d(1, 1, 1);}
+	0%, 100% {transform: translate3d(0, 0, 0) scale3d(1.3, 1.3, 1);}
+	50% {transform: translate3d(-1px, 0, 0) scale3d(1, 1, 1);}
 }
 
+// Base letter styling (applied when hovering)
 .textLetter {
 	text-align: center;
-	animation: rescale 1s infinite;
+	will-change: auto;
+	backface-visibility: hidden;
+	-webkit-font-smoothing: subpixel-antialiased;
+	display: inline; // Inline to keep line breaks working
+	
+	// Animate hovered line letters
+	&.readingLine {
+		animation: rescale 1s infinite;
+		will-change: transform;
+		display: inline-block; // Need block for animation
+	}
 }
 
 .next {

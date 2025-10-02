@@ -91,36 +91,71 @@ function createDivs(textSource, textHolder) {
 	return maxLineLength;
 }
 
+// Global lookup tables - completely redesigned for performance
+let columnData = []; // Array of column metadata: [{element, chars: [{char, lineNum, boldClass}]}]
+let lineToColumns = new Map(); // Maps lineNum to array of {columnIndex, charIndex}
+
 function writeLines(textSource, textHolder, maxLineLength) {
+	
+	// Clear previous data
+	columnData = [];
+	lineToColumns.clear();
+	
+	// Initialize column data structures
+	for (let i = 0; i < maxLineLength; i++) {
+		const columnEl = textHolder.children[i];
+		columnData.push({
+			element: columnEl,
+			chars: [], // Will store {char, lineNum, boldClass}
+			originalText: ''
+		});
+	}
 	
 	let lineNumber = 0;
 
 	for (let sourceLine of textSource) {
-
 		let line = sourceLine;
+		let startIndex = Math.max(0, Math.floor((maxLineLength - line.length)/2));
+		
+		// Track which columns have characters from this line
+		const columnsInLine = [];
 
-		let startIndex = Math.max(0, Math.floor((maxLineLength - line.length)/2)); // round down
-
-
-		for (let i = startIndex; i < (line.length+startIndex); i++) {
-
-			const char = line[i-startIndex];
-			const letter = document.createElement("div");
-			letter.className = "textLetter";
-			letter.classList.add(`line${lineNumber}`);
-
+		for (let i = startIndex; i < (line.length + startIndex); i++) {
+			const char = line[i - startIndex];
+			
+			// Determine bold class
+			let boldClass = '';
 			if (lineNumber % 2 === 0) {
-				letter.classList.add("bolded");
-			} else if ((lineNumber+1) % 4 === 0) {
-				letter.classList.add("bolded2");
+				boldClass = 'bolded';
+			} else if ((lineNumber + 1) % 4 === 0) {
+				boldClass = 'bolded2';
 			}
-
-			letter.textContent = char + " ";
-			textHolder.children[i].appendChild(letter);
-
+			
+			// Store character metadata
+			const charIndex = columnData[i].chars.length;
+			columnData[i].chars.push({
+				char: char + ' ',
+				lineNum: lineNumber,
+				boldClass: boldClass
+			});
+			
+			columnsInLine.push({ columnIndex: i, charIndex: charIndex });
 		}
-
+		
+		// Map line number to its column positions
+		lineToColumns.set(lineNumber, columnsInLine);
 		lineNumber++;
+	}
+	
+	// Add column class and event listeners (text will be built in adjustLines)
+	for (let i = 0; i < columnData.length; i++) {
+		const col = columnData[i];
+		col.element.classList.add('textColumn');
+		
+		// Add single hover listener per column instead of per letter
+		col.element.addEventListener('mouseenter', handleColumnHover, { passive: true });
+		col.element.addEventListener('mousemove', handleColumnMove, { passive: true });
+		col.element.addEventListener('mouseleave', handleColumnLeave, { passive: true });
 	}
 
 	// let maxHeight = 0;
@@ -146,13 +181,48 @@ function writeLines(textSource, textHolder, maxLineLength) {
 }
 
 function adjustLines() {
-	for (let line of TEXT_HOLDER.children) {
-		if (line.children.length % 2 === 0) {
-			const newLine = document.createElement("div");	
-			newLine.className = "textLine";
-			newLine.textContent = " ";
-			line.appendChild(newLine);
+	// Ensure each column has an odd number of characters for proper centering
+	for (let col of columnData) {
+		if (col.chars.length % 2 === 0) {
+			// Add a blank character at the end
+			col.chars.push({
+				char: ' ',
+				lineNum: -1, // Special marker for padding
+				boldClass: ''
+			});
 		}
+	}
+}
+
+function centerColumns() {
+	// Add vertical padding to center each column
+	for (let col of columnData) {
+		const blankLinesToAdd = Math.floor((maxHeight - col.chars.length) / 2);
+		
+		// Store the offset for later use in hover calculations
+		col.topOffset = blankLinesToAdd;
+		
+		// Add blank lines at the top
+		const topPadding = new Array(blankLinesToAdd).fill({
+			char: ' ',
+			lineNum: -1,
+			boldClass: ''
+		});
+		
+		// Add blank lines at the bottom  
+		const bottomPadding = new Array(maxHeight - col.chars.length - blankLinesToAdd).fill({
+			char: ' ',
+			lineNum: -1,
+			boldClass: ''
+		});
+		
+		// Combine: top padding + actual content + bottom padding
+		col.chars = [...topPadding, ...col.chars, ...bottomPadding];
+		
+		// Build plain text for default state (better performance)
+		const plainText = col.chars.map(c => c.char).join('\n');
+		col.originalText = plainText;
+		col.element.textContent = plainText;
 	}
 }
 
@@ -168,79 +238,146 @@ async function main() {
 	writeLines(TEXT_SEQUENCE, TEXT_HOLDER, maxLineLength);
 	adjustLines();
 
-	for (let line of TEXT_HOLDER.children) {
-		if (line.children.length > maxHeight) {
-			maxHeight = line.children.length;
+	// Calculate max height from column data
+	for (let col of columnData) {
+		if (col.chars.length > maxHeight) {
+			maxHeight = col.chars.length;
 		}
 	}
+	
+	// Now vertically center each column
+	centerColumns();
 }
 
 main();
 
-document.addEventListener("mousemove", (e) => {
+// Hover state tracking
+let currentHoveredLine = null;
+let hoveredColumnIndex = null;
+let leaveTimeout = null;
+let activeSpans = []; // Track created spans for cleanup
 
-	let hoveredLetter = document.querySelector(".textLetter:hover");
-	if (!hoveredLetter) {
-		for (let line of TEXT_HOLDER.children) {
-			line.style.transform = `translateY(0px)`;
-			for (let letter of line.children) {
-				letter.classList.remove("readingLine");
-				letter.classList.remove("readingLetter");
-			}
+// Handle column hover - detect which line we're over
+function handleColumnHover(e) {
+	const column = e.currentTarget;
+	hoveredColumnIndex = columnData.findIndex(c => c.element === column);
+	handleColumnMove(e); // Process immediately
+}
+
+// Handle mouse movement within column to detect row
+// Throttled to reduce overhead
+let lastMoveTime = 0;
+function handleColumnMove(e) {
+	if (hoveredColumnIndex === null) return;
+	
+	// Throttle to ~60fps
+	const now = performance.now();
+	if (now - lastMoveTime < 16) return;
+	lastMoveTime = now;
+	
+	const column = columnData[hoveredColumnIndex];
+	const rect = column.element.getBoundingClientRect();
+	const relativeY = e.clientY - rect.top;
+	
+	// Calculate which character/line we're hovering over
+	const charHeight = rect.height / column.chars.length;
+	const charIndex = Math.floor(relativeY / charHeight);
+	
+	if (charIndex < 0 || charIndex >= column.chars.length) return;
+	
+	const hoveredChar = column.chars[charIndex];
+	const lineNum = hoveredChar.lineNum;
+	
+	// Only update if we moved to a different line
+	if (lineNum !== currentHoveredLine) {
+		clearLeaveTimeout();
+		updateHoveredLine(lineNum, hoveredColumnIndex, charIndex);
+	}
+}
+
+// Handle leaving a column
+function handleColumnLeave(e) {
+	hoveredColumnIndex = null;
+	
+	// Delay before clearing to allow moving between columns
+	leaveTimeout = setTimeout(() => {
+		if (hoveredColumnIndex === null) {
+			clearHoveredLine();
 		}
-		return;
+	}, 50);
+}
+
+function clearLeaveTimeout() {
+	if (leaveTimeout) {
+		clearTimeout(leaveTimeout);
+		leaveTimeout = null;
 	}
+}
 
-	// grab current vertical trasnform of hovered line
-	let hoveredLetterOffset = 0;
-	let hoveredLine = hoveredLetter.parentElement;
-	const style = window.getComputedStyle(hoveredLine);
-	const transform = style.transform;
-	if (transform !== 'none') {
-	  const matrix = transform.match(/matrix.*\((.+)\)/)[1].split(', ');
-	  const translateY = parseFloat(matrix[5]); // Y translation is at index 5
-	  hoveredLetterOffset = translateY;
-	}
-
-	let hoveredClass = Array.from(hoveredLetter.classList)[1];
-
-	for (let line of TEXT_HOLDER.children) {
-		for (let letter of line.children) {
-			if (letter.classList.contains(hoveredClass)) {
-				letter.classList.add("readingLine");
-
-				if (letter.matches(":hover")) {
-					letter.classList.add("readingLetter");
-				} else {
-					letter.classList.remove("readingLetter");
-				}
+// Update which line is highlighted - THIS IS THE KEY FUNCTION
+function updateHoveredLine(lineNum, columnIndex, charIndex) {
+	// Clear previous highlighting
+	clearHoveredLine();
+	
+	currentHoveredLine = lineNum;
+	
+	// Get all columns that have characters in this line
+	const columnsInLine = lineToColumns.get(lineNum);
+	if (!columnsInLine) return;
+	
+	// Calculate the height offset for transforms
+	const hoveredCol = columnData[columnIndex];
+	const lineHeight = charIndex; // charIndex is already in absolute coordinates (includes padding)
+	
+	// For each column, split out the character at this line into a span
+	for (let {columnIndex: colIdx, charIndex: chIdx} of columnsInLine) {
+		const col = columnData[colIdx];
+		
+		// Build HTML with span for highlighted character
+		let html = '';
+		for (let i = 0; i < col.chars.length; i++) {
+			const charData = col.chars[i];
+			if (charData.lineNum === lineNum) {
+				// This is the highlighted character - wrap in span
+				const isHovered = colIdx === columnIndex;
+				const classes = ['textLetter', 'readingLine', charData.boldClass];
+				if (isHovered) classes.push('readingLetter');
+				html += `<span class="${classes.filter(c => c).join(' ')}">${charData.char}</span>`;
 			} else {
-				letter.classList.remove("readingLine");
-				letter.classList.remove("readingLetter");
+				// Normal character (including padding)
+				if (charData.lineNum === -1) {
+					// Padding - no special styling
+					html += `<span class="textLetter">${charData.char}</span>`;
+				} else {
+					const classes = ['textLetter', charData.boldClass];
+					html += `<span class="${classes.filter(c => c).join(' ')}">${charData.char}</span>`;
+				}
 			}
+			if (i < col.chars.length - 1) html += '\n';
 		}
+		
+		col.element.innerHTML = html;
+		
+		// Calculate and apply transform - find the absolute position of this line's character
+		const absoluteCharIndex = col.topOffset + chIdx;
+		const lineHeightDifference = absoluteCharIndex - lineHeight;
+		const translateValue = lineHeightDifference * -15;
+		col.element.style.transform = `translate3d(0, ${translateValue}px, 0)`;
 	}
+}
 
-	let lineHeightRelative = Array.from(hoveredLetter.parentElement.children).indexOf(hoveredLetter);
-	let lineVerticalLength = Array.from(hoveredLetter.parentElement.children).length;
-	let lineHeight = lineHeightRelative + (maxHeight - lineVerticalLength)/2;
-	// console.log(lineHeight);
-
-	for (let line of TEXT_HOLDER.children) {
-		let importantLetter = Array.from(line.children).find(letter => letter.classList.contains(hoveredClass));
-		if (!importantLetter) continue;
-
-		let localHeighRelative = Array.from(line.children).indexOf(importantLetter);
-		let localVerticalLength = Array.from(line.children).length;
-		let localLineHeight = localHeighRelative + (maxHeight - localVerticalLength)/2;
-		let lineHeightDifference = localLineHeight - lineHeight;
-
-		line.style.transform = `translateY(${lineHeightDifference * -15 + hoveredLetterOffset}px)`;
-		// line.style.transform = `translateY(${lineHeightDifference * -15}px)`;
-		// trying not to overdo the offset becacuse then the player can move the creature off the page
+// Clear all highlighting and revert to plain text
+function clearHoveredLine() {
+	if (currentHoveredLine === null) return;
+	
+	currentHoveredLine = null;
+	
+	// Revert all columns back to plain text for performance
+	for (let col of columnData) {
+		col.element.textContent = col.originalText;
+		col.element.style.transform = `translate3d(0, 0, 0)`;
 	}
-
-});
+}
 
 function highlightLine(lineNumber) {
 	for (let line of TEXT_HOLDER.children) {
@@ -270,10 +407,20 @@ document.addEventListener("click", () => {
 	}
 
 	TEXT_HOLDER.innerHTML = "";
+	
+	// Reset state
+	currentHoveredLine = null;
+	hoveredColumnIndex = null;
+	columnData = [];
+	lineToColumns.clear();
+	if (leaveTimeout) {
+		clearTimeout(leaveTimeout);
+		leaveTimeout = null;
+	}
 
 	document.querySelector(".title").textContent = titles[currentSource];
 
-	let maxHeight = 0;
+	maxHeight = 0;
 
 	main();
 
