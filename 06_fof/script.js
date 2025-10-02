@@ -1,11 +1,11 @@
 const TEXT_HOLDER = document.querySelector("#text-holder");
 
 const sources = [
-	{ file: "source.md", title: "rain by jorge luis borges" },
+	{ file: "source.md", title: "ramblings used for testing..." },
 	{ file: "source5.md", title: "oh the places you'll go by dr. seuss" },
 	{ file: "source3.md", title: "excerpt from the little prince by antoine de saint-exupéry" },
 	{ file: "sourceanjali.md", title: "by anjali gauld" },
-	{ file: "source.md", title: "ramblings used for testing..." }
+	{ file: "test.md", title: "###^^^#######" }
 ];
 let currentSource = 0;
 let maxLines = 0;
@@ -148,6 +148,46 @@ document.addEventListener("wheel", (e) => {
 	const zoomSpeed = 0.001;
 	zoomLevel += e.deltaY * zoomSpeed;
 	zoomLevel = Math.max(0.5, Math.min(2, zoomLevel));
+}, { passive: false });
+
+// Pinch-to-zoom for mobile (3D depth control)
+let initialPinchDistance = null;
+let initialZoomLevel = 1;
+
+document.addEventListener("touchstart", (e) => {
+	if (e.touches.length === 2) {
+		e.preventDefault();
+		const touch1 = e.touches[0];
+		const touch2 = e.touches[1];
+		initialPinchDistance = Math.hypot(
+			touch2.clientX - touch1.clientX,
+			touch2.clientY - touch1.clientY
+		);
+		initialZoomLevel = zoomLevel;
+	}
+}, { passive: false });
+
+document.addEventListener("touchmove", (e) => {
+	if (e.touches.length === 2 && initialPinchDistance) {
+		e.preventDefault();
+		const touch1 = e.touches[0];
+		const touch2 = e.touches[1];
+		const currentDistance = Math.hypot(
+			touch2.clientX - touch1.clientX,
+			touch2.clientY - touch1.clientY
+		);
+		
+		// Calculate zoom based on pinch distance change
+		const scale = currentDistance / initialPinchDistance;
+		zoomLevel = initialZoomLevel * scale;
+		zoomLevel = Math.max(0.5, Math.min(2, zoomLevel));
+	}
+}, { passive: false });
+
+document.addEventListener("touchend", (e) => {
+	if (e.touches.length < 2) {
+		initialPinchDistance = null;
+	}
 }, { passive: false });
 
 document.addEventListener("mousemove", (e) => {

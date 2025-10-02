@@ -2,6 +2,7 @@ html {
   background-color: rgb(247, 245, 241);
   font-family: monospace;
   cursor: crosshair;
+  overflow: hidden;
 }
 
 body {
