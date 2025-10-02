@@ -8,14 +8,14 @@ const sources = [
 	"source2.md",
 	"source5.md",
 	"source3.md",
-	"source4.md",
+	"sourceanjali.md",
 	"source.md"
 ]
 const titles = [
 	"rain by jorge luis borges",
 	"oh the places you'll go by dr. seuss",
 	"excerpt from the little prince by antoine de saint-exupéry",
-	"setInterval() docs",
+	"by anjali gauld",
 	"ramblings used for testing..."
 ]
 let currentSource = 0;
