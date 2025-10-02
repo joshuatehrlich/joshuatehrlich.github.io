@@ -1,26 +1,20 @@
 const TEXT_HOLDER = document.querySelector("#text-holder");
 
-const TEXT_SOURCE = `
-I have a theory about how the world works
-`;
-
 const sources = [
-	"source2.md",
-	"source5.md",
-	"source3.md",
-	"sourceanjali.md",
-	"source.md"
-]
-const titles = [
-	"rain by jorge luis borges",
-	"oh the places you'll go by dr. seuss",
-	"excerpt from the little prince by antoine de saint-exupéry",
-	"by anjali gauld",
-	"ramblings used for testing..."
-]
+	{ file: "source.md", title: "rain by jorge luis borges" },
+	{ file: "source5.md", title: "oh the places you'll go by dr. seuss" },
+	{ file: "source3.md", title: "excerpt from the little prince by antoine de saint-exupéry" },
+	{ file: "sourceanjali.md", title: "by anjali gauld" },
+	{ file: "source.md", title: "ramblings used for testing..." }
+];
 let currentSource = 0;
-
+let maxLines = 0;
 let maxHeight = 0;
+
+// ============================================================================
+// PARSING FUNCTIONS
+// ============================================================================
+
 
 async function loadAndParseLines(source) {
     const response = await fetch(source);
@@ -58,19 +52,6 @@ async function loadAndParseLines(source) {
     // console.log(lines);
     return lines;
 }
-
-// function writeText(textSource, textHolder) {
-// 	for (let ch of textSource) {
-
-// 		const letter = document.createElement("div");
-// 		letter.className = "textLetter"
-
-// 		// textHolder.appendChild(letter);
-// 		letter.textContent = ch;
-// 		textHolder.appendChild(letter);
-		
-// 	}
-// }
 
 function createDivs(textSource, textHolder) {
 	let maxLineLength = 0;
@@ -123,26 +104,7 @@ function writeLines(textSource, textHolder, maxLineLength) {
 		lineNumber++;
 	}
 
-	// let maxHeight = 0;
-	// for (let line of textHolder.children) {
-	// 	if (line.children.length > maxHeight) {
-	// 		maxHeight = line.children.length;
-	// 	}
-	// }
-
-	// for (let line of textHolder.children) {
-
-	// 	let currentLineHeight = textHolder.children.length;
-	// 	let blankHeightToTop = (currentLineHeight - maxHeight)/2;
-
-	// 	let lineCounter = blankHeightToTop;
-
-	// 	for (let letter of line.children) {
-	// 		letter.classList.add(`line${lineCounter}`);
-	// 		lineCounter++;
-	// 	}
-	// }
-
+	maxLines = lineNumber;
 }
 
 function adjustLines() {
@@ -156,28 +118,47 @@ function adjustLines() {
 	}
 }
 
-// writeText(TEXT_SOURCE, TEXT_HOLDER);
 
-async function main() {
+// function highlightLine(lineNumber) {
+// 	for (let line of TEXT_HOLDER.children) {
+// 		for (let letter of line.children) {
+// 			if (letter.classList.contains(`line${lineNumber}`)) {
+// 				letter.classList.add("selectedLine");
+// 				console.log("added");
+// 			} else if (letter.classList.contains(`line${lineNumber+2}`) || letter.classList.contains(`line${lineNumber-2}`)) {
+// 				letter.classList.remove("selectedLine");
+// 				letter.classList.add("selectedLine2");
+// 			} else {
+// 				letter.classList.remove("selectedLine");
+// 				letter.classList.remove("selectedLine2");
+// 			}
+// 		}
+// 	}
+// }
 
-	document.querySelector(".title").textContent = titles[currentSource];
+// ============================================================================
+// EVENT LISTENERS
+// ============================================================================
 
-	const TEXT_SEQUENCE = await loadAndParseLines(sources[currentSource]);
 
-	const maxLineLength = createDivs(TEXT_SEQUENCE, TEXT_HOLDER);
-	writeLines(TEXT_SEQUENCE, TEXT_HOLDER, maxLineLength);
-	adjustLines();
+let zoomLevel = 1;
 
-	for (let line of TEXT_HOLDER.children) {
-		if (line.children.length > maxHeight) {
-			maxHeight = line.children.length;
-		}
-	}
-}
-
-main();
+document.addEventListener("wheel", (e) => {
+	e.preventDefault();
+	const zoomSpeed = 0.001;
+	zoomLevel += e.deltaY * zoomSpeed;
+	zoomLevel = Math.max(0.5, Math.min(2, zoomLevel));
+}, { passive: false });
 
 document.addEventListener("mousemove", (e) => {
+
+	const mouseX = (e.clientX / window.innerWidth) - 0.5;
+	const mouseY = (e.clientY / window.innerHeight) - 0.5;
+
+	const rotateY = mouseX * 30;
+	const rotateX = mouseY * -30;
+
+	TEXT_HOLDER.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${zoomLevel})`;
 
 	let hoveredLetter = document.querySelector(".textLetter:hover");
 	if (!hoveredLetter) {
@@ -221,19 +202,16 @@ document.addEventListener("mousemove", (e) => {
 		}
 	}
 
-	let lineHeightRelative = Array.from(hoveredLetter.parentElement.children).indexOf(hoveredLetter);
-	let lineVerticalLength = Array.from(hoveredLetter.parentElement.children).length;
-	let lineHeight = lineHeightRelative + (maxHeight - lineVerticalLength)/2;
+	// let lineHeightRelative = Array.from(hoveredLetter.parentElement.children).indexOf(hoveredLetter);
+	// let lineVerticalLength = Array.from(hoveredLetter.parentElement.children).length;
+	// let lineHeight = lineHeightRelative + (maxHeight - lineVerticalLength)/2;
 	// console.log(lineHeight);
+	let hoveredLetterHeight = findAbsoluteLetterHeight(hoveredLetter);
 
-	for (let line of TEXT_HOLDER.children) {
-		let importantLetter = Array.from(line.children).find(letter => letter.classList.contains(hoveredClass));
-		if (!importantLetter) continue;
-
-		let localHeighRelative = Array.from(line.children).indexOf(importantLetter);
-		let localVerticalLength = Array.from(line.children).length;
-		let localLineHeight = localHeighRelative + (maxHeight - localVerticalLength)/2;
-		let lineHeightDifference = localLineHeight - lineHeight;
+	const hoveredLineLetters = TEXT_HOLDER.querySelectorAll(`.${hoveredClass}`);
+	for (let letter of hoveredLineLetters) {
+		let line = letter.parentElement;
+		let lineHeightDifference = findAbsoluteLetterHeight(letter) - hoveredLetterHeight;
 
 		line.style.transform = `translateY(${lineHeightDifference * -15 + hoveredLetterOffset}px)`;
 		// line.style.transform = `translateY(${lineHeightDifference * -15}px)`;
@@ -241,23 +219,6 @@ document.addEventListener("mousemove", (e) => {
 	}
 
 });
-
-function highlightLine(lineNumber) {
-	for (let line of TEXT_HOLDER.children) {
-		for (let letter of line.children) {
-			if (letter.classList.contains(`line${lineNumber}`)) {
-				letter.classList.add("selectedLine");
-				console.log("added");
-			} else if (letter.classList.contains(`line${lineNumber+2}`) || letter.classList.contains(`line${lineNumber-2}`)) {
-				letter.classList.remove("selectedLine");
-				letter.classList.add("selectedLine2");
-			} else {
-				letter.classList.remove("selectedLine");
-				letter.classList.remove("selectedLine2");
-			}
-		}
-	}
-}
 
 document.addEventListener("click", () => {
 	if (!document.querySelector(".next").matches(":hover")) {
@@ -271,11 +232,62 @@ document.addEventListener("click", () => {
 
 	TEXT_HOLDER.innerHTML = "";
 
-	document.querySelector(".title").textContent = titles[currentSource];
-
-	let maxHeight = 0;
-
 	main();
-
-	
 });
+
+function findAbsoluteLetterHeight(letter) {
+	let relativeLetterHeight = Array.from(letter.parentElement.children).indexOf(letter);
+	let localVerticalLength = Array.from(letter.parentElement.children).length;
+	return relativeLetterHeight + (maxHeight - localVerticalLength)/2;
+}
+
+function colorLetters() {
+	for (i=0; i<maxLines; i++) {
+		let deepestAbsoluteHeight = 0;
+		for (let letter of TEXT_HOLDER.querySelectorAll(`.line${i}`)) {
+			// letter.classList.add(`absolute-height${findAbsoluteLetterHeight(letter)}`);
+			if (findAbsoluteLetterHeight(letter) > deepestAbsoluteHeight) {
+				deepestAbsoluteHeight = findAbsoluteLetterHeight(letter);
+			}
+		}
+		for (let letter of TEXT_HOLDER.querySelectorAll(`.line${i}`)) {
+			let depth = deepestAbsoluteHeight - findAbsoluteLetterHeight(letter);
+			letter.classList.add(`depth${depth}`);
+			let opacity = 0.2 + depth/10;
+			letter.style.opacity = opacity;
+			let zDepth = depth*10;
+			letter.style.transform = `translateZ(${zDepth}px)`;
+			let backgroundColor = `rgba(0, 0, 0, ${0.5-(opacity*0.4)})`;
+			letter.style.backgroundColor = backgroundColor;
+			// letter.style.opacity = opacity;
+		}
+	}
+}
+
+// ============================================================================
+// MAIN FUNCTION
+// ============================================================================
+
+async function main() {
+
+	document.querySelector(".title").textContent = sources[currentSource].title;
+
+	maxHeight = 0;
+	maxLines = 0;
+
+	const TEXT_SEQUENCE = await loadAndParseLines(sources[currentSource].file);
+
+	const maxLineLength = createDivs(TEXT_SEQUENCE, TEXT_HOLDER);
+	writeLines(TEXT_SEQUENCE, TEXT_HOLDER, maxLineLength);
+	adjustLines();
+
+	for (let line of TEXT_HOLDER.children) {
+		if (line.children.length > maxHeight) {
+			maxHeight = line.children.length;
+		}
+	}
+
+	colorLetters();
+}
+
+main();
