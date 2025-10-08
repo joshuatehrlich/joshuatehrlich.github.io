@@ -145,7 +145,7 @@ let zoomLevel = 1;
 
 document.addEventListener("wheel", (e) => {
 	e.preventDefault();
-	const zoomSpeed = 0.001;
+	const zoomSpeed = -0.001;
 	zoomLevel += e.deltaY * zoomSpeed;
 	zoomLevel = Math.max(0.5, Math.min(2, zoomLevel));
 }, { passive: false });
@@ -195,8 +195,8 @@ document.addEventListener("mousemove", (e) => {
 	const mouseX = (e.clientX / window.innerWidth) - 0.5;
 	const mouseY = (e.clientY / window.innerHeight) - 0.5;
 
-	const rotateY = mouseX * 30;
-	const rotateX = mouseY * -30;
+	const rotateY = mouseX * 60;
+	const rotateX = mouseY * -60;
 
 	TEXT_HOLDER.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${zoomLevel})`;
 
@@ -282,26 +282,46 @@ function findAbsoluteLetterHeight(letter) {
 }
 
 function colorLetters() {
+	let deepestDepth = 0; // just the deepest depth of all lines, for determining the max depth
 	for (i=0; i<maxLines; i++) {
-		let deepestAbsoluteHeight = 0;
+		let deepestAbsoluteHeight = 0; // for each line, the deepest absolute height of all letters in the line
 		for (let letter of TEXT_HOLDER.querySelectorAll(`.line${i}`)) {
 			// letter.classList.add(`absolute-height${findAbsoluteLetterHeight(letter)}`);
 			if (findAbsoluteLetterHeight(letter) > deepestAbsoluteHeight) {
 				deepestAbsoluteHeight = findAbsoluteLetterHeight(letter);
 			}
+			if (deepestAbsoluteHeight - findAbsoluteLetterHeight(letter) > deepestDepth) {
+				deepestDepth = deepestAbsoluteHeight;
+			}
 		}
+		let lastLetterSpace = false;
 		for (let letter of TEXT_HOLDER.querySelectorAll(`.line${i}`)) {
 			let depth = deepestAbsoluteHeight - findAbsoluteLetterHeight(letter);
 			letter.classList.add(`depth${depth}`);
-			let opacity = 0.2 + depth/10;
-			letter.style.opacity = opacity;
+			// let opacity = 0.2 + depth/10;
+			let opacity = 0.3 + (depth/deepestDepth);
+			let color = `rgba(0, 0, 0, ${0.1+depth/deepestDepth})`;
+			// console.log(depth, deepestDepth, opacity);
+			letter.style.color = color;
 			let zDepth = depth*10;
 			letter.style.transform = `translateZ(${zDepth}px)`;
-			let backgroundColor = `rgba(0, 0, 0, ${0.5-(opacity*0.4)})`;
-			letter.style.backgroundColor = backgroundColor;
+			
+			if (letter.textContent !== "  ") {
+				let backgroundColor = `rgba(0, 0, 0, ${(1.0-(depth/deepestDepth))*0.2})`;
+				letter.style.backgroundColor = backgroundColor;
+				lastLetterSpace = false;
+			} else if (!lastLetterSpace) {
+				let backgroundColor = `rgba(0, 0, 0, ${(1.0-(depth/deepestDepth))*0.2})`;
+				letter.style.backgroundColor = backgroundColor;
+				lastLetterSpace = true;
+			} else {
+				letter.style.backgroundColor = "rgba(0, 0, 0, 0)";
+			}
 			// letter.style.opacity = opacity;
+			// letter.classList.add(Math.round((depth/deepestDepth)*10));
 		}
 	}
+		console.log(deepestDepth);
 }
 
 // ============================================================================
