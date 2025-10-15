@@ -8,17 +8,17 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color( 0xffffff );
 
 const camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 0.1, 1000 );
-camera.position.z = 5;
+const CAMERA_DISTANCE = 2;
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+const directionalLight = new THREE.DirectionalLight( 0xffffff, 1.5 );
 directionalLight.position.set( 10, 10, 20 );
 scene.add( directionalLight );
 
-const ambientLight = new THREE.AmbientLight( 0xffffff, 0.9 );
+const ambientLight = new THREE.AmbientLight( 0xffffff, 0.8 );
 scene.add( ambientLight );
 
 // ################
@@ -38,42 +38,200 @@ const dotScreenPass = new DotScreenPass(
 );
 const bloomPass = new UnrealBloomPass(
 	new THREE.Vector2( window.innerWidth, window.innerHeight ), // resolution
-	0.2,  // strength (how intense the glow)
+	0.1,  // strength (how intense the glow)
 	0.4,  // radius (how far the glow spreads)
 	0.85  // threshold (only bright objects glow, 0-1)
 );
 // composer.addPass( dotScreenPass );
-composer.addPass( bloomPass );
+// composer.addPass( bloomPass );
 
 // ################
-// # Add cube funtion #
+// # Add cube function #
 // ################
-const geometry = new THREE.SphereGeometry(1, 32, 32);
-const material = new THREE.MeshBasicMaterial( { color: 0x000000 } ); // #0x00ff00 is green
-function addCube(randomness = 1) {
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshStandardMaterial( { color: 0xffffff }); // #0x00ff00 is green
+function addCube(pos = new THREE.Vector3(0, 0, 0), size = 1) {
 	const cubeMaterial = material.clone();
 	cubeMaterial.transparent = true;
 	cubeMaterial.opacity = 0;
 	cubeMaterial.userData.finalOpacity = Math.random() * 0.5 + 0.5;
 	cubeMaterial.userData.fadingIn = true;
-	const cube = new THREE.Mesh( geometry, cubeMaterial );
+	let _geometry = new THREE.BoxGeometry(size, size, size);
+	// _geometry.translate(pos.x, pos.y, pos.z);
+	const cube = new THREE.Mesh( _geometry, cubeMaterial );
+	cube.position.set(pos.x, pos.y, pos.z);
 	cube.material = cubeMaterial;
 	scene.add( cube );
-	cube.position.x = (Math.random() * 10 - 5)*randomness;
-	cube.position.y = (Math.random() * 10 - 5)*randomness;
-	cube.position.z = (Math.random() * 10 - 5)*randomness;
+	cubeGroup.add(cube);
+	cubeGrid.set(key(pos.x, pos.y, pos.z), cube);
 	return cube;
 }
 
-async function addCubes(numberOfCubes = 1, randomness = 1) {
-	for (let i = 0; i < numberOfCubes; i++) {
-		cubes.push(addCube(randomness));
-		await new Promise(resolve => setTimeout(resolve, 100/numberOfCubes));
+const cubeGrid = new Map();
+function key(x, y, z) {
+	return `${x},${y},${z}`;
+}
+const cubeGroup = new THREE.Group();
+cubeGroup.position.x = 0;
+cubeGroup.position.y = 0;
+cubeGroup.position.z = 0;
+scene.add(cubeGroup);
+addCube(new THREE.Vector3(0,0,0), 1);
+
+
+function splitcube(_cube) {
+	// console.log(_cube.geometry.parameters.position)
+	let _pos = _cube.position;
+	// console.log(_pos);
+	let _size = _cube.geometry.parameters.width/2;
+
+	_pos = _pos.clone().sub(new THREE.Vector3(_size/2,_size/2,_size/2));
+	
+	let child_positions = [];
+	for (let x = 0; x < 2; x++) {
+		for (let y = 0; y < 2; y++) {
+			for (let z = 0; z < 2; z++) {
+				if (Math.random() > 0.0) {
+				child_positions.push(new THREE.Vector3(_pos.x + _size * x, _pos.y + _size * y, _pos.z + _size * z));
+				}
+			}
+		}
+	}
+	cubeGroup.remove(_cube);
+	cubeGrid.delete(key(_cube.position.x, _cube.position.y, _cube.position.z));
+	_cube.geometry.dispose();
+	for (let pos of child_positions) {
+		addCube(pos, _size);
+		// console.log(pos, _size);
 	}
 }
 
-let cubes = [];
-cubes.push(addCube(0));
+function cullCubes() {
+
+	let cubesToCull = [];
+	for (let cube of cubeGroup.children) {
+		cubesToCull.push(cube);
+	}
+
+	for (let cube of cubesToCull) {
+
+		let neighbourCount = 0;
+		let _size = cube.geometry.parameters.width;
+		let _neighbourpositions = [
+			new THREE.Vector3(1,0,0),
+			new THREE.Vector3(0,1,0),
+			new THREE.Vector3(0,0,1),
+			new THREE.Vector3(-1,0,0),
+			new THREE.Vector3(0,-1,0),
+			new THREE.Vector3(0,0,-1),
+		];
+		for (let neighbourposition of _neighbourpositions) {
+			if (cubeGrid.has(key(cube.position.x + neighbourposition.x*_size, cube.position.y + neighbourposition.y*_size, cube.position.z + neighbourposition.z*_size))) {
+				neighbourCount++;
+			}
+		}
+
+		let _color;
+		let _deathchance = 0.0;
+		switch (neighbourCount) {
+			case 6:
+				_color = new THREE.Color(0x00ff00);
+				_deathchance = 0.0;
+				break;
+			case 5:
+				_color = new THREE.Color(0x80ff00);
+				_deathchance = 0.1;
+				break;
+			case 4:
+				_color = new THREE.Color(0xffff00);
+				_deathchance = 0.2;
+				break;
+			case 3:
+				_color = new THREE.Color(0xff8000);
+				_deathchance = 0.5;
+				break;
+			case 2:
+				_color = new THREE.Color(0xff4000);
+				_deathchance = 0.7;
+				break;
+			case 1:
+				_color = new THREE.Color(0xff0000);
+				_deathchance = 0.9;
+				break;
+			case 0:
+				_color = new THREE.Color(0x0000ff);
+				_deathchance = 1.0;
+				break;
+			default:
+				_color = new THREE.Color(0x0000ff);
+				break;
+		}
+		// if (neighbourCount > 0){
+		// 	_color = new THREE.Color(0xff0000);
+		// } else {
+		// 	_color = new THREE.Color(0x00ff00);
+		// }
+		cube.material.color = _color;
+		if (Math.random() < _deathchance) {
+			cubeGroup.remove(cube);
+			cubeGrid.delete(key(cube.position.x, cube.position.y, cube.position.z));
+			cube.geometry.dispose();
+		}
+
+		// if (neighbourCount >= 6) {
+		// 	cube.material.color = new THREE.Color(0xff0000);
+		// 	continue;
+		// }
+		// else if (neighbourCount >= 3) {
+		// 	cube.material.color = new THREE.Color(0xff5555);
+		// 	continue;
+		// }
+		// else {
+		// 	continue;
+		// 	// cubeGroup.remove(cube);
+		// 	// cubeGrid.delete(key(cube.position.x, cube.position.y, cube.position.z));
+		// 	// cube.geometry.dispose();
+		// }
+	}
+}
+
+function groundCubes() {
+	let all_grounded = false;
+	while (!all_grounded) {
+		all_grounded = true;
+		for (let cube of cubeGroup.children) {
+			let _size = cube.geometry.parameters.height;
+			let _posy = cube.position.y;
+			let _floor_posy = _posy-_size/2;
+			if (
+				!cubeGrid.has(key(cube.position.x, _posy-_size, cube.position.z))
+				&& _floor_posy > -0.5
+			) {
+				all_grounded = false;
+				console.log(_posy,_floor_posy);
+				// cube.material.color = new THREE.Color(0x00ff00);
+				cube.position.y -= _size;
+				cubeGrid.delete(key(cube.position.x, _posy, cube.position.z));
+				cubeGrid.set(key(cube.position.x, cube.position.y, cube.position.z), cube);
+			}
+		}
+	}
+}
+
+function colorCubes() {
+	for (let cube of cubeGroup.children) {
+		let _abs_posy = (cube.position.y - cube.geometry.parameters.height/2) + 0.5;
+		let lightness;
+		if (Math.round(_abs_posy*100) % 5 == 0) {
+			lightness = 0.5;
+			cube.material.opacity = 1.0
+		} else {
+			lightness = 0.7;
+			cube.material.opacity = 0.5;
+		}
+		cube.material.color = new THREE.Color().setHSL(_abs_posy*0.2-.04, 1.0, lightness);
+	}
+}
 
 // #########################
 // # Camera tracking mouse #
@@ -90,53 +248,32 @@ window.addEventListener( "mousemove", ( event ) => {
 
 let paused = false;
 
-// const keysPressed = {
-// 	w: false,
-// 	a: false,
-// 	s: false,
-// 	d: false
-// }
-
 window.addEventListener("keydown", (event) => {
-	console.log(event.key);
-	if (event.key == " ") {
-		paused = !paused;
-	}
-	if (event.key == "ArrowUp" || event.key == "w") {
-		cameraMovement.y += 1.0;
-	}
-	if (event.key == "ArrowDown" || event.key == "s") {
-		cameraMovement.y -= 1.0;
-	}
-	if (event.key == "ArrowLeft" || event.key == "a") {
-		cameraMovement.x -= 1.0;
-	}
-	if (event.key == "ArrowRight" || event.key == "d") {
-		cameraMovement.x += 1.0;
-	}
+	// console.log(event.key);
 	if (event.key == "q") {
 		cameraMovement.z -= 1.0;
 	}
 	if (event.key == "e") {
 		cameraMovement.z += 1.0;
 	}
+	if (event.key == "w") {
+		let splitCubes = [];
+		for (let cube of cubeGroup.children) {
+			splitCubes.push(cube);
+		}
+		for (let i = 0; i < splitCubes.length; i++) {
+			splitcube(splitCubes[i]);
+		}
+		groundCubes();
+		if (cubeGroup.children.length > 10) cullCubes();
+		groundCubes();
+		colorCubes();
+	}
 
 	cameraMovement.clamp(new THREE.Vector3(-1, -1, -1), new THREE.Vector3(1, 1, 1));
 });
 
 window.addEventListener("keyup", (event) => {
-	if (event.key == "ArrowUp" || event.key == "w") {
-		cameraMovement.y -= 1.0;
-	}
-	if (event.key == "ArrowDown" || event.key == "s") {
-		cameraMovement.y += 1.0;
-	}
-	if (event.key == "ArrowLeft" || event.key == "a") {
-		cameraMovement.x += 1.0;
-	}
-	if (event.key == "ArrowRight" || event.key == "d") {
-		cameraMovement.x -= 1.0;
-	}
 	if (event.key == "q") {
 		cameraMovement.z += 1.0;
 	}
@@ -164,12 +301,8 @@ let absoluteTime = 0;
 function animate() {
   // Use composer instead of renderer.render()
   composer.render();
-  for (let cube of cubes) {
-    cube.rotation.y += 0.01;
-	cube.position.y += Math.sin(absoluteTime + cube.position.x) * 0.01;
-	cube.scale.x = Math.sin(absoluteTime + cube.position.x) * 0.4 + 1;
-	cube.scale.y = Math.sin(absoluteTime + cube.position.x) * 0.4 + 1;
-	cube.scale.z = Math.sin(absoluteTime + cube.position.x) * 0.4 + 1;
+
+  for (let cube of cubeGroup.children) {
 
 	if (cube.material.userData.fadingIn) {
 		cube.material.opacity += 0.01;
@@ -179,48 +312,36 @@ function animate() {
 	}
 
   }
+//   }
 
   // Update camera position
-  cameraOffset.x += cameraMovement.x * MOVMENT_SPEED;
-  cameraOffset.y += cameraMovement.y * MOVMENT_SPEED;
-  cameraOffset.z += cameraMovement.z * MOVMENT_SPEED*0.5;
-  console.log(cameraOffset);
-  cameraPositionTarget.x = -mousePosition.x * 10 * Math.max(1.0,Math.abs(cameraOffset.z)) + cameraOffset.x;
-  cameraPositionTarget.y = mousePosition.y * 10 * Math.max(1.0,Math.abs(cameraOffset.z)) + cameraOffset.y;
+  cameraOffset.z += cameraMovement.z * MOVMENT_SPEED*0.1;
+//   console.log(cameraOffset);
+  cubeGroup.rotation.y = mousePosition.x * 10; 
+  cubeGroup.rotation.x = mousePosition.y * 10;
   cameraPositionTarget.z = 5 + cameraOffset.z;
   camera.position.lerp(cameraPositionTarget, 0.1);
 //   camera.position.x = -mousePosition.x * 10 * Math.max(1.0,cameraOffset.z) + cameraOffset.x;
 //   camera.position.y = mousePosition.y * 10 * Math.max(1.0,cameraOffset.z) + cameraOffset.y;
-  camera.position.z = 5 + cameraOffset.z;
+  camera.position.z = CAMERA_DISTANCE + cameraOffset.z;
   absoluteTime += 0.01;
 
-  if (paused) { 
-	for (let cube of cubes) {
-		// cube.material.opacity = 1;
-		cube.material.color = new THREE.Color( 0xffffff );
-	}
-	scene.background = new THREE.Color( 0x000000 );
-	ambientLight.intensity = 10;
-	return;
-	}
-	else {
-		for (let cube of cubes) {
-			cube.material.color = new THREE.Color( 0x000000 );
-		}
-		scene.background = new THREE.Color( 0xffffff );
-		// material.color = new THREE.Color( 0xffffff );
-		ambientLight.intensity = 0.9;
-	}
-
-  time += 0.01;
-//   console.log(time);
-  while (time > 2 && cubes.length < 1000) {
-	console.log("adding cube");
-	// for (let i = 0; i < cubes.length + 2; i++) {
-		// cubes.push(addCube(cubes.length*0.1));	
-	// }
-	addCubes(cubes.length, cubes.length*0.1);
-	time = 0;
-  }
+//   if (paused) { 
+// 	for (let cube of cubeGroup.children) {
+// 		// cube.material.opacity = 1;
+// 		cube.material.color = new THREE.Color( 0xffffff );
+// 	}
+// 	scene.background = new THREE.Color( 0x000000 );
+// 	ambientLight.intensity = 10;
+// 	return;
+// 	}
+// 	else {
+// 		for (let cube of cubeGroup.children) {
+// 			cube.material.color = new THREE.Color( 0x000000 );
+// 		}
+// 		scene.background = new THREE.Color( 0xffffff );
+// 		// material.color = new THREE.Color( 0xffffff );
+// 		ambientLight.intensity = 0.9;
+// 	}
 }
 renderer.setAnimationLoop( animate );
