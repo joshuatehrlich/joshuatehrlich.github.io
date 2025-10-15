@@ -30,21 +30,6 @@ const composer = new EffectComposer( renderer );
 const renderPass = new RenderPass( scene, camera );
 composer.addPass( renderPass );
 
-// Then add the dot screen effect
-const dotScreenPass = new DotScreenPass(
-	new THREE.Vector2( 0, 0 ), // center
-	0.5,  // angle (rotation)
-	1.0   // scale (higher = smaller dots)
-);
-const bloomPass = new UnrealBloomPass(
-	new THREE.Vector2( window.innerWidth, window.innerHeight ), // resolution
-	0.1,  // strength (how intense the glow)
-	0.4,  // radius (how far the glow spreads)
-	0.85  // threshold (only bright objects glow, 0-1)
-);
-// composer.addPass( dotScreenPass );
-// composer.addPass( bloomPass );
-
 // ################
 // # Add cube function #
 // ################
@@ -166,32 +151,13 @@ function cullCubes() {
 				_color = new THREE.Color(0x0000ff);
 				break;
 		}
-		// if (neighbourCount > 0){
-		// 	_color = new THREE.Color(0xff0000);
-		// } else {
-		// 	_color = new THREE.Color(0x00ff00);
-		// }
+
 		cube.material.color = _color;
 		if (Math.random() < _deathchance) {
 			cubeGroup.remove(cube);
 			cubeGrid.delete(key(cube.position.x, cube.position.y, cube.position.z));
 			cube.geometry.dispose();
 		}
-
-		// if (neighbourCount >= 6) {
-		// 	cube.material.color = new THREE.Color(0xff0000);
-		// 	continue;
-		// }
-		// else if (neighbourCount >= 3) {
-		// 	cube.material.color = new THREE.Color(0xff5555);
-		// 	continue;
-		// }
-		// else {
-		// 	continue;
-		// 	// cubeGroup.remove(cube);
-		// 	// cubeGrid.delete(key(cube.position.x, cube.position.y, cube.position.z));
-		// 	// cube.geometry.dispose();
-		// }
 	}
 }
 
@@ -233,6 +199,20 @@ function colorCubes() {
 	}
 }
 
+function processCubes() {
+	let splitCubes = [];
+	for (let cube of cubeGroup.children) {
+		splitCubes.push(cube);
+	}
+	for (let i = 0; i < splitCubes.length; i++) {
+		splitcube(splitCubes[i]);
+	}
+	groundCubes();
+	if (cubeGroup.children.length > 10) cullCubes();
+	groundCubes();
+	colorCubes();
+}
+
 // #########################
 // # Camera tracking mouse #
 // #########################
@@ -257,17 +237,7 @@ window.addEventListener("keydown", (event) => {
 		cameraMovement.z += 1.0;
 	}
 	if (event.key == "w") {
-		let splitCubes = [];
-		for (let cube of cubeGroup.children) {
-			splitCubes.push(cube);
-		}
-		for (let i = 0; i < splitCubes.length; i++) {
-			splitcube(splitCubes[i]);
-		}
-		groundCubes();
-		if (cubeGroup.children.length > 10) cullCubes();
-		groundCubes();
-		colorCubes();
+		processCubes();
 	}
 
 	cameraMovement.clamp(new THREE.Vector3(-1, -1, -1), new THREE.Vector3(1, 1, 1));
@@ -296,8 +266,8 @@ window.addEventListener('resize', () => {
 // ###############
 
 let cameraPositionTarget = new THREE.Vector3(0,0,0);
-let time = 0;
-let absoluteTime = 0;
+
+
 function animate() {
   // Use composer instead of renderer.render()
   composer.render();
@@ -321,27 +291,8 @@ function animate() {
   cubeGroup.rotation.x = mousePosition.y * 10;
   cameraPositionTarget.z = 5 + cameraOffset.z;
   camera.position.lerp(cameraPositionTarget, 0.1);
-//   camera.position.x = -mousePosition.x * 10 * Math.max(1.0,cameraOffset.z) + cameraOffset.x;
-//   camera.position.y = mousePosition.y * 10 * Math.max(1.0,cameraOffset.z) + cameraOffset.y;
   camera.position.z = CAMERA_DISTANCE + cameraOffset.z;
-  absoluteTime += 0.01;
 
-//   if (paused) { 
-// 	for (let cube of cubeGroup.children) {
-// 		// cube.material.opacity = 1;
-// 		cube.material.color = new THREE.Color( 0xffffff );
-// 	}
-// 	scene.background = new THREE.Color( 0x000000 );
-// 	ambientLight.intensity = 10;
-// 	return;
-// 	}
-// 	else {
-// 		for (let cube of cubeGroup.children) {
-// 			cube.material.color = new THREE.Color( 0x000000 );
-// 		}
-// 		scene.background = new THREE.Color( 0xffffff );
-// 		// material.color = new THREE.Color( 0xffffff );
-// 		ambientLight.intensity = 0.9;
-// 	}
 }
+
 renderer.setAnimationLoop( animate );
