@@ -37,12 +37,11 @@ composer.addPass( renderPass );
 // const plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshStandardMaterial({color: 0xffffff}));
 // scene.add(plane);
 const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshStandardMaterial( { color: 0xffffff }); // #0x00ff00 is green
+const material = new THREE.MeshStandardMaterial( { color: 0x0000ff }); // #0x00ff00 is green
 function addCube(pos = new THREE.Vector3(0, 0, 0), size = 1, _geometry = geometry) {
 	const cubeMaterial = material.clone();
 	cubeMaterial.transparent = true;
-	cubeMaterial.opacity = 0;
-	cubeMaterial.userData.finalOpacity = Math.random() * 0.5 + 0.5;
+	cubeMaterial.opacity = Math.random() * 0.5 + 0.5;
 	cubeMaterial.userData.fadingIn = true;
 	cubeMaterial.userData.finalPosition = pos.clone();
 
@@ -201,15 +200,19 @@ function colorCubes() {
 		let lightness;
 		if (Math.round(_abs_posy*100) % 5 == 0) {
 			lightness = 0.5;
-			cube.material.opacity = 1.0
+			cube.material.opacity += 0.2;
+			if (cube.material.opacity >= 1.0) {
+				cube.material.opacity = 1.0;
+			}
 		} else {
 			lightness = 0.7;
-			cube.material.opacity = 0.5;
+			// cube.material.opacity = 0.5;
 		}
 		cube.material.color = new THREE.Color().setHSL(-_abs_posy*0.4-.34, 1.0, lightness);
 	}
 }
 
+let gravity = true;
 function processCubes() {
 	let splitCubes = [];
 	for (let cube of cubeGroup.children) {
@@ -218,10 +221,29 @@ function processCubes() {
 	for (let i = 0; i < splitCubes.length; i++) {
 		splitcube(splitCubes[i]);
 	}
-	groundCubes();
+	if (gravity) groundCubes();
 	if (cubeGroup.children.length > 10) cullCubes();
-	groundCubes();
+	if (gravity) groundCubes();
 	colorCubes();
+
+	document.querySelector("#cubecount").textContent = `cubes : ${cubeGroup.children.length}`;
+}
+
+function resetCubes() {
+	let cubesToKill = [];
+	for (let cube of cubeGroup.children) {
+		cubesToKill.push(cube);
+	}
+	for (let cube of cubesToKill) {
+		cubeGroup.remove(cube);
+		scene.remove(cube);
+		cube.material.dispose();
+		cube.geometry.dispose();
+	}
+	cubeGrid.clear();
+	addCube(new THREE.Vector3(0,0,0), 1);
+
+	document.querySelector("#cubecount").textContent = `cubes : ${cubeGroup.children.length}`;
 }
 
 // #########################
@@ -241,25 +263,44 @@ let paused = false;
 
 window.addEventListener("keydown", (event) => {
 	// console.log(event.key);
-	if (event.key == "q") {
+	if (event.key == "a") {
 		cameraMovement.z -= 1.0;
 	}
-	if (event.key == "e") {
+	if (event.key == "d") {
 		cameraMovement.z += 1.0;
+	}
+	if (event.key == "w") {
+		cameraMovement.y += 1.0;
+	}
+	if (event.key == "s") {
+		cameraMovement.y -= 1.0;
 	}
 	if (event.key == " ") {
 		processCubes();
+	}
+	if (event.key == "r") {
+		resetCubes();
+	}
+	if (event.key == "g") {
+		gravity = !gravity;
+		document.querySelector("#gravity").classList.toggle("active");
 	}
 
 	cameraMovement.clamp(new THREE.Vector3(-1, -1, -1), new THREE.Vector3(1, 1, 1));
 });
 
 window.addEventListener("keyup", (event) => {
-	if (event.key == "q") {
+	if (event.key == "a") {
 		cameraMovement.z += 1.0;
 	}
-	if (event.key == "e") {
+	if (event.key == "d") {
 		cameraMovement.z -= 1.0;
+	}
+	if (event.key == "w") {
+		cameraMovement.y -= 1.0;
+	}
+	if (event.key == "s") {
+		cameraMovement.y += 1.0;
 	}
 	cameraMovement.clamp(new THREE.Vector3(-1, -1, -1), new THREE.Vector3(1, 1, 1));
 });
@@ -294,7 +335,7 @@ function animate() {
 	// 	}
 	// }
 	// else {
-	cube.material.opacity = Math.min(1.0,((Math.sin(time+cube.position.y+cube.position.x+cube.position.z+(cube.material.userData.finalOpacity*5))*0.5+0.5)*0.7+0.3)*cube.material.userData.finalOpacity);
+	// cube.material.opacity = Math.min(1.0,((Math.sin(time+cube.position.y+cube.position.x+cube.position.z+(cube.material.userData.finalOpacity*5))*0.5+0.5)*0.7+0.3)*cube.material.userData.finalOpacity);
 	// cube.position.y = cube.material.userData.finalPosition.y + Math.sin(time+cube.position.x+cube.position.z)*cube.geometry.parameters.height/2;
 	// cube.geometry.translate(0, Math.sin(time+cube.position.x+cube.position.z)*(cube.geometry.parameters.height/400), 0);
 	// }
@@ -303,11 +344,15 @@ function animate() {
 //   }
 
   // Update camera position
-  cameraOffset.z += cameraMovement.z * MOVMENT_SPEED*0.1;
+  cameraOffset.z += cameraMovement.z * MOVMENT_SPEED*0.1 * (camera.position.z/10);
+  cameraOffset.x += cameraMovement.x * MOVMENT_SPEED*0.1;
+  cameraOffset.y += cameraMovement.y * MOVMENT_SPEED*0.1;
 //   console.log(cameraOffset);
   cubeGroup.rotation.y = mousePosition.x * 10; 
   cubeGroup.rotation.x = mousePosition.y * 10;
   cameraPositionTarget.z = 5 + cameraOffset.z;
+  cameraPositionTarget.x = cameraOffset.x * MOVMENT_SPEED*0.1;
+  cameraPositionTarget.y = cameraOffset.y * MOVMENT_SPEED*0.1;
   camera.position.lerp(cameraPositionTarget, 0.1);
   camera.position.z = CAMERA_DISTANCE + cameraOffset.z;
 
