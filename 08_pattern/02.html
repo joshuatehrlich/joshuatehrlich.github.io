@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Patterns</title>
+    <style>
+      body { margin: 0; overflow: hidden; cursor: none; }
+    </style>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="cover"></div>
+    <a href="./03.html">next</a>
+	<!-- <h1>Repetition</h1> -->
+  <style>
+    * {
+      font-family: Helvetica, sans-serif;
+      font-weight: bold;
+      font-size: 1rem;
+      color: gray;
+      padding: 0;
+      margin: 0;
+    }
+    .cover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.0);
+      display: flex;
+      flex-direction: row;
+    }
+    .row {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 1;
+      /* width: 1000px;
+      height: 1000px; */
+      flex-shrink: 1;
+      flex-grow: 1;
+    }
+    .cell {
+      height: 100%;
+      width: 100%;
+      flex-shrink: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      transition: 0.1s;
+    }
+    .thief {
+      scale: 1.4;
+      /* border-radius: 50%; */
+      transform: rotate(45deg);
+      /* outline: 1px solid rgba(255, 255, 255, 0.473); */
+      /* border-radius: 10%; */
+      /* backdrop-filter: blur(10px); */
+    }
+    .stole {
+      scale: 1.9;
+      /* border-radius: 50%; */
+      transform: rotate(70deg);
+    }
+    h4 {
+      opacity: 0.5;
+      margin: 0;
+      overflow: hidden;
+      text-overflow: clip;
+      white-space: nowrap;
+      max-width: 100%;
+      display: none;
+    }
+  </style>
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+				"three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+			}
+		}
+	</script>
+    <script type="module" src="./02.js"></script>
+  </body>
+</html>

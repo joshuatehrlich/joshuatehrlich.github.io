@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>My first three.js app</title>
+    <title>Repetition</title>
     <style>
       body { margin: 0; overflow: hidden; cursor: none; }
     </style>
@@ -15,7 +15,16 @@
     <a class="controls">reset : r</a>
     <a class="controls">zoom : d / e</a>
     <a id="gravity">gravity : g</a>
+    <a id="colorcoding">height based colors : c</a>
     <a id="cubecount" class="controls">cubes : 1</a>
+    <a class="controls"># of neighbors : death rate</a>
+    <a class="controls" id="n1">1 : 0.1</a>
+    <a class="controls" id="n2">2 : 0.2</a>
+    <a class="controls" id="n3">3 : 0.3</a>
+    <a class="controls" id="n4">4 : 0.4</a>
+    <a class="controls" id="n5">5 : 0.5</a>
+    <a class="controls" id="n6">6 : 0.6</a>
+    <a class="controls">reset death rate : e</a>
   </div>
 	<script type="importmap">
 		{
@@ -68,7 +77,10 @@
       margin-top: 2rem;
       margin-bottom: 2rem;
     }
-    #gravity.active {
+    #colorcoding {
+      margin-bottom: 2rem;
+    }
+    #gravity.active, #colorcoding.active {
       opacity: 0.4!important;
       font-weight: 600!important;
     }

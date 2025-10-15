@@ -1,0 +1,15 @@
+
+    a {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.5rem;
+      text-decoration: none;
+      color: black;
+      font-weight: bold;
+      font-family: Helvetica, sans-serif;
+      opacity: 0.6;
+    }
+    a:hover {
+      opacity: 1.0;
+    }

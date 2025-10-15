@@ -101,6 +101,23 @@ function splitcube(_cube) {
 	}
 }
 
+let neighborDeathRate = new Map([
+	[1, 1.0],
+	[2, 1.0],
+	[3, 0.8],
+	[4, 0.2],
+	[5, 0.1],
+	[6, 0.0],
+]);
+let currentNeighborDeathRate = new Map([
+	[1, neighborDeathRate.get(1)],
+	[2, neighborDeathRate.get(2)],
+	[3, neighborDeathRate.get(3)],
+	[4, neighborDeathRate.get(4)],
+	[5, neighborDeathRate.get(5)],
+	[6, neighborDeathRate.get(6)],
+])
+
 function cullCubes() {
 
 	let cubesToCull = [];
@@ -131,31 +148,31 @@ function cullCubes() {
 		switch (neighbourCount) {
 			case 6:
 				_color = new THREE.Color(0x00ff00);
-				_deathchance = 0.0;
+				_deathchance = currentNeighborDeathRate.get(6);
 				break;
 			case 5:
 				_color = new THREE.Color(0x80ff00);
-				_deathchance = 0.1;
+				_deathchance = currentNeighborDeathRate.get(5);
 				break;
 			case 4:
 				_color = new THREE.Color(0xffff00);
-				_deathchance = 0.2;
+				_deathchance = currentNeighborDeathRate.get(4);
 				break;
 			case 3:
 				_color = new THREE.Color(0xff8000);
-				_deathchance = 0.8;
+				_deathchance = currentNeighborDeathRate.get(3);
 				break;
 			case 2:
 				_color = new THREE.Color(0xff4000);
-				_deathchance = 1.0;
+				_deathchance = currentNeighborDeathRate.get(2);
 				break;
 			case 1:
 				_color = new THREE.Color(0xff0000);
-				_deathchance = 1.0;
+				_deathchance = currentNeighborDeathRate.get(1);
 				break;
 			case 0:
 				_color = new THREE.Color(0x0000ff);
-				_deathchance = 1.0;
+				_deathchance = currentNeighborDeathRate.get(0);
 				break;
 			default:
 				_color = new THREE.Color(0x0000ff);
@@ -211,7 +228,7 @@ function colorCubes() {
 		cube.material.color = new THREE.Color().setHSL(-_abs_posy*0.4-.34, 1.0, lightness);
 	}
 }
-
+let colorCoding = true;
 let gravity = true;
 function processCubes() {
 	let splitCubes = [];
@@ -224,7 +241,7 @@ function processCubes() {
 	if (gravity) groundCubes();
 	if (cubeGroup.children.length > 10) cullCubes();
 	if (gravity) groundCubes();
-	colorCubes();
+	if (colorCoding) colorCubes();
 
 	document.querySelector("#cubecount").textContent = `cubes : ${cubeGroup.children.length}`;
 }
@@ -261,6 +278,12 @@ window.addEventListener( "mousemove", ( event ) => {
 
 let paused = false;
 
+document.querySelector("#n1").textContent = `1 : ${Math.round(currentNeighborDeathRate.get(1)*100)/100}`;
+document.querySelector("#n2").textContent = `2 : ${Math.round(currentNeighborDeathRate.get(2)*100)/100}`;
+document.querySelector("#n3").textContent = `3 : ${Math.round(currentNeighborDeathRate.get(3)*100)/100}`;
+document.querySelector("#n4").textContent = `4 : ${Math.round(currentNeighborDeathRate.get(4)*100)/100}`;
+document.querySelector("#n5").textContent = `5 : ${Math.round(currentNeighborDeathRate.get(5)*100)/100}`;
+document.querySelector("#n6").textContent = `6 : ${Math.round(currentNeighborDeathRate.get(6)*100)/100}`;
 window.addEventListener("keydown", (event) => {
 	// console.log(event.key);
 	if (event.key == "a") {
@@ -284,6 +307,72 @@ window.addEventListener("keydown", (event) => {
 	if (event.key == "g") {
 		gravity = !gravity;
 		document.querySelector("#gravity").classList.toggle("active");
+	}
+	if (event.key == "e") {
+		currentNeighborDeathRate.set(1, neighborDeathRate.get(1));
+		currentNeighborDeathRate.set(2, neighborDeathRate.get(2));
+		currentNeighborDeathRate.set(3, neighborDeathRate.get(3));
+		currentNeighborDeathRate.set(4, neighborDeathRate.get(4));
+		currentNeighborDeathRate.set(5, neighborDeathRate.get(5));
+		currentNeighborDeathRate.set(6, neighborDeathRate.get(6));
+		document.querySelector("#n1").textContent = `1 : ${Math.round(currentNeighborDeathRate.get(1)*100)/100}`;
+		document.querySelector("#n2").textContent = `2 : ${Math.round(currentNeighborDeathRate.get(2)*100)/100}`;
+		document.querySelector("#n3").textContent = `3 : ${Math.round(currentNeighborDeathRate.get(3)*100)/100}`;
+		document.querySelector("#n4").textContent = `4 : ${Math.round(currentNeighborDeathRate.get(4)*100)/100}`;
+		document.querySelector("#n5").textContent = `5 : ${Math.round(currentNeighborDeathRate.get(5)*100)/100}`;
+		document.querySelector("#n6").textContent = `6 : ${Math.round(currentNeighborDeathRate.get(6)*100)/100}`;
+	}
+	if (event.key == "1") {
+		if (currentNeighborDeathRate.get(1) >= 1.0) {
+			currentNeighborDeathRate.set(1, 0.0);
+		} else {
+		currentNeighborDeathRate.set(1, (currentNeighborDeathRate.get(1) + 0.1));
+		}
+		document.querySelector("#n1").textContent = `1 : ${Math.round(currentNeighborDeathRate.get(1)*100)/100}`;
+	}
+	if (event.key == "2") {
+		if (currentNeighborDeathRate.get(2) >= 1.0) {
+			currentNeighborDeathRate.set(2, 0.0);
+		} else {
+		currentNeighborDeathRate.set(2, (currentNeighborDeathRate.get(2) + 0.1));
+		}
+		document.querySelector("#n2").textContent = `2 : ${Math.round(currentNeighborDeathRate.get(2)*100)/100}`;
+	}
+	if (event.key == "3") {
+		if (currentNeighborDeathRate.get(3) >= 1.0) {
+			currentNeighborDeathRate.set(3, 0.0);
+		} else {
+		currentNeighborDeathRate.set(3, (currentNeighborDeathRate.get(3) + 0.1));
+		}
+		document.querySelector("#n3").textContent = `3 : ${Math.round(currentNeighborDeathRate.get(3)*100)/100}`;
+	}
+	if (event.key == "4") {
+		if (currentNeighborDeathRate.get(4) >= 1.0) {
+			currentNeighborDeathRate.set(4, 0.0);
+		} else {
+		currentNeighborDeathRate.set(4, (currentNeighborDeathRate.get(4) + 0.1));
+		}
+		document.querySelector("#n4").textContent = `4 : ${Math.round(currentNeighborDeathRate.get(4)*100)/100}`;
+	}
+	if (event.key == "5") {
+		if (currentNeighborDeathRate.get(5) >= 1.0) {
+			currentNeighborDeathRate.set(5, 0.0);
+		} else {
+		currentNeighborDeathRate.set(5, (currentNeighborDeathRate.get(5) + 0.1));
+		}
+		document.querySelector("#n5").textContent = `5 : ${Math.round(currentNeighborDeathRate.get(5)*100)/100}`;
+	}
+	if (event.key == "6") {
+		if (currentNeighborDeathRate.get(6) >= 1.0) {
+			currentNeighborDeathRate.set(6, 0.0);
+		} else {
+		currentNeighborDeathRate.set(6, (currentNeighborDeathRate.get(6) + 0.1));
+		}
+		document.querySelector("#n6").textContent = `6 : ${Math.round(currentNeighborDeathRate.get(6)*100)/100}`;
+	}
+	if (event.key == "c") {
+		colorCoding = !colorCoding;
+		document.querySelector("#colorcoding").classList.toggle("active");
 	}
 
 	cameraMovement.clamp(new THREE.Vector3(-1, -1, -1), new THREE.Vector3(1, 1, 1));
