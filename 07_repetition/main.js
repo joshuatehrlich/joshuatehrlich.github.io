@@ -16,6 +16,7 @@ document.body.appendChild( renderer.domElement );
 
 const directionalLight = new THREE.DirectionalLight( 0xffffff, 1.5 );
 directionalLight.position.set( 10, 10, 20 );
+directionalLight.castShadow = true;
 scene.add( directionalLight );
 
 const ambientLight = new THREE.AmbientLight( 0xffffff, 0.8 );
@@ -33,17 +34,24 @@ composer.addPass( renderPass );
 // ################
 // # Add cube function #
 // ################
+// const plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshStandardMaterial({color: 0xffffff}));
+// scene.add(plane);
 const geometry = new THREE.BoxGeometry(1, 1, 1);
 const material = new THREE.MeshStandardMaterial( { color: 0xffffff }); // #0x00ff00 is green
-function addCube(pos = new THREE.Vector3(0, 0, 0), size = 1) {
+function addCube(pos = new THREE.Vector3(0, 0, 0), size = 1, _geometry = geometry) {
 	const cubeMaterial = material.clone();
 	cubeMaterial.transparent = true;
 	cubeMaterial.opacity = 0;
 	cubeMaterial.userData.finalOpacity = Math.random() * 0.5 + 0.5;
 	cubeMaterial.userData.fadingIn = true;
-	let _geometry = new THREE.BoxGeometry(size, size, size);
-	// _geometry.translate(pos.x, pos.y, pos.z);
+	cubeMaterial.userData.finalPosition = pos.clone();
+
+
 	const cube = new THREE.Mesh( _geometry, cubeMaterial );
+
+	cube.castShadow = true;
+	cube.receiveShadow = true;
+
 	cube.position.set(pos.x, pos.y, pos.z);
 	cube.material = cubeMaterial;
 	scene.add( cube );
@@ -85,8 +93,11 @@ function splitcube(_cube) {
 	cubeGroup.remove(_cube);
 	cubeGrid.delete(key(_cube.position.x, _cube.position.y, _cube.position.z));
 	_cube.geometry.dispose();
+
+	let _geometry = new THREE.BoxGeometry(_size, _size, _size);
+
 	for (let pos of child_positions) {
-		addCube(pos, _size);
+		addCube(pos, _size, _geometry);
 		// console.log(pos, _size);
 	}
 }
@@ -133,15 +144,15 @@ function cullCubes() {
 				break;
 			case 3:
 				_color = new THREE.Color(0xff8000);
-				_deathchance = 0.5;
+				_deathchance = 0.8;
 				break;
 			case 2:
 				_color = new THREE.Color(0xff4000);
-				_deathchance = 0.7;
+				_deathchance = 1.0;
 				break;
 			case 1:
 				_color = new THREE.Color(0xff0000);
-				_deathchance = 0.9;
+				_deathchance = 1.0;
 				break;
 			case 0:
 				_color = new THREE.Color(0x0000ff);
@@ -195,7 +206,7 @@ function colorCubes() {
 			lightness = 0.7;
 			cube.material.opacity = 0.5;
 		}
-		cube.material.color = new THREE.Color().setHSL(_abs_posy*0.2-.04, 1.0, lightness);
+		cube.material.color = new THREE.Color().setHSL(-_abs_posy*0.4-.34, 1.0, lightness);
 	}
 }
 
@@ -236,7 +247,7 @@ window.addEventListener("keydown", (event) => {
 	if (event.key == "e") {
 		cameraMovement.z += 1.0;
 	}
-	if (event.key == "w") {
+	if (event.key == " ") {
 		processCubes();
 	}
 
@@ -267,19 +278,26 @@ window.addEventListener('resize', () => {
 
 let cameraPositionTarget = new THREE.Vector3(0,0,0);
 
-
+let time = 0;
 function animate() {
   // Use composer instead of renderer.render()
-  composer.render();
+  renderer.render(scene, camera);
+	time += 0.01;
+  console.log(cubeGroup.children.length);
+  const _cubes = Array.from(cubeGroup.children);
+  for (let cube of _cubes) {
 
-  for (let cube of cubeGroup.children) {
-
-	if (cube.material.userData.fadingIn) {
-		cube.material.opacity += 0.01;
-		if (cube.material.opacity >= cube.material.userData.finalOpacity) {
-			cube.material.userData.fadingIn = false;
-		}
-	}
+	// if (cube.material.userData.fadingIn) {
+	// 	cube.material.opacity += 0.01;
+	// 	if (cube.material.opacity >= cube.material.userData.finalOpacity) {
+	// 		cube.material.userData.fadingIn = false;
+	// 	}
+	// }
+	// else {
+	cube.material.opacity = Math.min(1.0,((Math.sin(time+cube.position.y+cube.position.x+cube.position.z+(cube.material.userData.finalOpacity*5))*0.5+0.5)*0.7+0.3)*cube.material.userData.finalOpacity);
+	// cube.position.y = cube.material.userData.finalPosition.y + Math.sin(time+cube.position.x+cube.position.z)*cube.geometry.parameters.height/2;
+	// cube.geometry.translate(0, Math.sin(time+cube.position.x+cube.position.z)*(cube.geometry.parameters.height/400), 0);
+	// }
 
   }
 //   }
