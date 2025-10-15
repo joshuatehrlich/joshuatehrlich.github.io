@@ -43,3 +43,19 @@ async function main() {
 
 main();
 
+// change variables on mousemove
+
+document.addEventListener("mousemove", (e) => {
+    // rotateZ = e.clientX / window.innerWidth * 10;
+    // rotateX = e.clientY / window.innerHeight * 10;
+    // rotateY = e.clientX / window.innerWidth * 10;
+    translateY = e.clientY / window.innerHeight * 100;
+    translateX = e.clientX / window.innerWidth * 100;
+});
+
+// reset on pressing r
+document.addEventListener("keydown", (e) => {
+    if (e.key === "r") {
+        window.location.reload();
+    }
+});
