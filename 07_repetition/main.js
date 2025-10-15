@@ -322,7 +322,8 @@ let cameraPositionTarget = new THREE.Vector3(0,0,0);
 let time = 0;
 function animate() {
   // Use composer instead of renderer.render()
-  renderer.render(scene, camera);
+//   renderer.render(scene, camera);
+composer.render();
 	time += 0.01;
   console.log(cubeGroup.children.length);
   const _cubes = Array.from(cubeGroup.children);
