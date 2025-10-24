@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Randomness</title>
+	</head>
+	<body>
+		<div id="textholder"><h1 id="tutorial">press space to generate a line</h1></div>
+		<!-- <div class="howtouse">press space to generate a line</div> -->
+		<script src="script.js"></script>
+		<style>
+			:root {
+				font-family: monospace;
+				margin: 0;
+				padding: 0;
+				overflow: hidden;
+			}
+			#textholder {
+				translate: 30vw 50vh;
+				display: flex;
+				flex-direction: column;
+				justify-content: right;
+				align-items: right;
+				left: 0;
+				bottom: 0;
+				gap: 1rem;
+				transition: transform 0.5s, opacity 0.5s;
+			}
+			#textholder h1 {
+				font-size: 2rem;
+				margin: 0;
+				opacity: 0.2;
+				transition: all 0.5s;
+			}
+			#textholder h1:last-child {
+				opacity: 1;
+				transition: all 0.5s;
+			}
+			.howtouse {
+				position: absolute;
+				opacity: 0.5;
+				bottom: 2rem;
+				left: 0;
+				right: 0;
+				text-align: center;
+			}
+		</style>
+	</body>
+</html>
