@@ -181,6 +181,7 @@ function updateCursorPosition() {
 		cursor.style.left = `${document.getElementById("currentLine").offsetLeft}px`;
 		cursor.style.top = `${document.getElementById("currentLine").offsetTop}px`;
 	}
+	requestAnimationFrame(updateCursorPosition);
 }
 
 document.addEventListener("keydown", (e) => {
@@ -216,9 +217,10 @@ document.addEventListener("keydown", (e) => {
 			letters_typed--;
 		}
 	}
-	setTimeout(updateCursorPosition, 10);
 });
 
+// update cursor position every 10ms
+requestAnimationFrame(updateCursorPosition);
 
 // const titleBox = document.getElementById("title-box");
 // let titleInitialised = false;
