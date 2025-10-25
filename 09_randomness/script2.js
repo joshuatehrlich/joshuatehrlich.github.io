@@ -29,7 +29,7 @@ const alphabet_weighted = [
 ];
 
 const caps = [["UPPERCASE",1], ["lowercase", 1], ["Contextual", 0]];
-const mediums = [["Black", 10], ["Red",1]];
+const mediums = [["Black", 10], ["Red",0]];
 const nexts = [[``, 70], [",", 10], [".", 10], ["!", 5], ["?", 5]];
 const newlines = [[``, 80], ["New Line", 15], ["New Stanza", 15], ["END", 5]];
 const textHolder = document.getElementById("textholder");
@@ -124,11 +124,7 @@ function generateWord() {
 			text = document.createElement("h1");
 			document.getElementById("currentLine").removeAttribute("id");
 			text.id = "currentLine";
-			textHolder.appendChild(text);
-			
-			text = document.createElement("h1");
-			document.getElementById("currentLine").removeAttribute("id");
-			text.id = "currentLine";
+			text.classList.add("stanza");
 			textHolder.appendChild(text);
 
 			if (newline === `END`) {
@@ -211,6 +207,12 @@ function updateCursorPosition() {
 document.addEventListener("keydown", (e) => {
 	// if (ended) return;
 	if (ended) return;
+
+	e.preventDefault();
+	    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth'
+    });
 
     if (
 		e.key === " " && wordNumber > 0 &&
