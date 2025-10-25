@@ -4,7 +4,10 @@
 		<title>Randomness</title>
 	</head>
 	<body>
-		<div id="textholder"><h1 id="tutorial">press space to generate a line</h1></div>
+		<div id="title-box"></div>
+		<div id="textholder"></div>
+		<h1 id="tutorial">press space to generate the first<br>letter of each word.</h1>
+		<div id="cursor"></div>
 		<!-- <div class="howtouse">press space to generate a line</div> -->
 		<script src="script2.js"></script>
 		<style>
@@ -12,14 +15,52 @@
 				font-family: monospace;
 				margin: 0;
 				padding: 0;
-				overflow: hidden;
+				overflow-x: hidden;
+				font-size: 0.8rem;
 			}
 			body.ended {
 				background-color: black;
 				color: white !important;
 			}
+			body {
+				padding: 5vw 30vw;
+				background-color: rgb(229, 230, 220);
+			}
+			#title-box {
+				font-size: 2rem;
+				display:flex;
+				flex-direction: column;
+				margin-bottom: 2rem;
+			}
+			#title-box h1:first-child {
+				font-size: 3.5rem;
+				font-weight: 900;
+			}
+			#title-box h1:first-child::before {
+				content: "This poem should be called...";
+				display: block;
+				position: relative;
+				left: 0;
+				top: 0;
+				font-size: 2rem;
+				opacity: 1;
+				transition: all 0.5s;
+				/* width: 100%; */
+				/* height: 1px; */
+				background-color: black;
+				color: rgba(255, 255, 255, 0.24);
+			}
+			#title-box h1:last-child {
+				font-size: 2.5rem;
+				font-weight: 400;
+				font-style: italic;
+				/* text-transform: uppercase; */
+			}
+			#title-box h1:last-child span:last-child {
+				color: rgb(110, 110, 255);
+			}
 			#textholder {
-				translate: 30vw 50vh;
+				/* translate: 30vw 50vh; */
 				display: flex;
 				flex-direction: column;
 				justify-content: right;
@@ -32,11 +73,44 @@
 			#textholder h1 {
 				font-size: 2rem;
 				margin: 0;
-				opacity: 0.2;
+				opacity: 1.0;
 				transition: all 0.5s;
+				text-wrap: wrap;
+				color: rgba(0, 0, 0, 0.616);
 			}
 			#textholder h1:last-child {
-				opacity: 1;
+				opacity: 1.0;
+				font-size: 2.3rem;
+				transition: all 0.5s;
+				color: black;
+			}
+			#textholder h1:last-child span:last-child {
+				color: rgb(110, 110, 255);
+				transform: scale(10) !important;
+				/* font-weight:  600 !important; */
+			}
+			#tutorial {
+				position: absolute;
+				display: absolute;
+				/* bottom: 2rem; */
+				/* translate: 0 30vh; */
+				left: 0;
+				right: 0;
+				top: 0;
+				bottom: 0;
+				text-align: center;
+				opacity: 0.5;
+				transition: all 1.0s;
+				/* width: min-content; */
+				height: min-content;
+				margin: auto;
+				font-weight: 100;
+				font-style: italic;
+			}
+			h1 span {
+				text-wrap: wrap;
+				word-wrap: break-word;
+				font-weight: 400;
 				transition: all 0.5s;
 			}
 			.howtouse {
@@ -46,6 +120,33 @@
 				left: 0;
 				right: 0;
 				text-align: center;
+			}
+			#cursor {
+				position: absolute;
+				margin: 0.1rem;
+				margin-top: 0.2rem;
+				margin-left: 0.2rem;
+				width: 0.5rem;
+				height: 2.2rem;
+				background-color: rgb(104, 114, 255);
+				animation: blink 1.5s infinite;
+				transition: all 0.06s;
+				display: none;
+			}
+			@keyframes blink {
+				0% {
+					opacity: 1;
+				}
+				50% {
+					opacity: 0;
+				}
+			}
+			body.ended #cursor {
+				animation: none !important;
+				opacity: 0 !important;
+			}
+			body.ended #textholder h1 {
+				color: white;
 			}
 		</style>
 	</body>

@@ -1,8 +1,3 @@
-document.addEventListener("keydown", (e) => {
-    if (e.key === " ") {
-		generateWord();
-    }
-});
 
 const alphabet_weighted = [
 	["a", 11.7],
@@ -33,86 +28,130 @@ const alphabet_weighted = [
 	["z", 0.045]
 ];
 
-const caps = [["UPPERCASE",1], ["lowercase", 1], ["Contextual", 4]];
+const caps = [["UPPERCASE",1], ["lowercase", 1], ["Contextual", 1]];
 const mediums = [["Black", 5], ["Red",3], ["Blue", 1]];
 const nexts = [[``, 70], [",", 10], [".", 10], ["!", 5], ["?", 5]];
 const newlines = [[``, 80], ["New Line", 15], ["New Stanza", 15], ["END", 5]];
 const textHolder = document.getElementById("textholder");
+const weights = [["italics", 1], ["bold", 1], ["normal", 8]];
 let ended = false;
 let just_entered = false;
-var lineNumber = 0;
+var wordNumber = 0;
 
 var typingAllCaps = false;
 var typingAllLowercase = false;
 
+var letters_typed = 0;
+
+function _ready() {
+	var text = document.createElement("h1");
+	text.id = "currentLine";
+	textHolder.appendChild(text);
+	text.textContent = ` `;
+
+	var span = document.createElement("span");
+	span.id = "currentWord";
+	text.appendChild(span);
+	span.textContent = ` `;
+}
+
+_ready();
+
 function generateWord() {
-	if (ended) return;
+	// if the poem has ended, don't generate any more words
 
-	document.getElementById("tutorial").style.opacity = 0;
+	// helpful to initialize within the whole function
+	var text = document.getElementById("currentLine");
+	var span = document.getElementById("currentWord");
+	letters_typed = 0;
 
+	// first determine choices and redefine elements based on them
+
+	let next = determineChance(nexts);
+	let newline = determineChance(newlines);
 	let letter = determineChance(alphabet_weighted);
 	let cap = determineChance(caps);
 	let medium = determineChance(mediums);
-	let next = determineChance(nexts);
-	let newline = determineChance(newlines);
-
-	// console.log(letter, cap, medium, next);
-	let text = document.createElement("h1");
-	if (lineNumber > 0) {
-		document.getElementById("currentLine").removeAttribute("id");
-	}
-	text.id = "currentLine";
-	lineNumber++;
-
+	let weight = determineChance(weights);
 	if (cap === "UPPERCASE") {
-		console.log("UPPERCASE");
+		// console.log("UPPERCASE");
 		letter = letter.toUpperCase();
+		typingAllCaps = true;
+		typingAllLowercase = false;
+		console.log("UPPERCASE");
 		// text.style.textTransform = "uppercase";
 	} else if (cap === "lowercase") {
-		console.log("lowercase");
+		// console.log("lowercase");
 		letter = letter.toLowerCase();
+		typingAllLowercase = true;
+		typingAllCaps = false;
 		// text.style.textTransform = "lowercase";
 	} else if (cap === "Contextual") {
-		console.log("Contextual");
-		letter = letter.toUpperCase() + letter.toLowerCase();
+		// console.log("Contextual");
+		letter = letter.toUpperCase(); // eventually give user ability to choose
+		typingAllCaps = false;
+		typingAllLowercase = false;
 	}
 
-	if (medium === "Black") {
-		text.style.color = "black";
-	} else if (medium === "Red") {
-		text.style.color = "red";
-	} else if (medium === "Blue") {
-		text.style.color = "blue";
+	///////////////// now dealing with DOM /////////////////
+
+	if (wordNumber > 0) span.textContent += ` `;
+
+	if (newline !== `` || wordNumber === 0) {
+		
+		// console.log(letter, cap, medium, next);
+		text = document.createElement("h1");
+		document.getElementById("currentLine").removeAttribute("id");
+
+		text.id = "currentLine";
+		textHolder.appendChild(text);
+
+		if (newline !== `New Line`) {
+
+			text.textContent = ` `;
+
+			console.log("new stanza");
+
+			text = document.createElement("h1");
+			document.getElementById("currentLine").removeAttribute("id");
+			text.id = "currentLine";
+			textHolder.appendChild(text);
+			
+			text = document.createElement("h1");
+			document.getElementById("currentLine").removeAttribute("id");
+			text.id = "currentLine";
+			textHolder.appendChild(text);
+
+			if (newline === `END`) {
+				ended = true;
+				text.textContent = `END`;
+				document.body.classList.add("ended");
+				generateTitleWord();
+				return;
+			}
+		}
 	}
-
-
-	if (newline === `` || just_entered) {
-		text.textContent = `${letter}-${next}`;
+	else {
 		just_entered = false;
 	}
-	else if (newline === `New Line`) {
-		text.textContent = `New Line`;
-		just_entered = true
-	}
-	else if (newline === `New Stanza`) {
-		text.textContent = `New Stanza`;
-		just_entered = true
-	}
-	else if (newline === `END`) {
-		text.textContent = `END`;
-		ended = true;
-		document.body.classList.add("ended");
-		for (child of textHolder.children) {
-			child.style.color = "white";
-		}
-		text.style.color = "white";
+
+	span = document.createElement("span");
+	text.appendChild(span);
+	document.getElementById("currentWord").removeAttribute("id");
+	span.id = "currentWord";
+	span.textContent += `${letter}`;
+
+	if (weight === "italics") {
+		span.style.fontStyle = "italic";
+	} else if (weight === "bold") {
+		span.style.fontWeight = "900";
+	} else if (weight === "normal") {
+		span.style.fontWeight = "normal";
 	}
 
+	wordNumber++;
 
-
-	textHolder.appendChild(text);
-	textHolder.style.transform = `translateY(-${textHolder.children.length * 3}rem)`;
-	return text;
+	document.getElementById("tutorial").style.opacity = 0;
 }
 
 function determineChance(array) {
@@ -130,8 +169,118 @@ function determineChance(array) {
 
 }
 
-document.addEventListener("keydown", (e) => {
-	if (e.key.length === 1) {
-		document.getElementById("currentLine").textContent += e.key;
+function updateCursorPosition() {
+	const cursor = document.getElementById("cursor");
+	const lastspan = document.getElementById("currentLine").lastElementChild;
+
+	if (lastspan) {
+		cursor.style.left = `${lastspan.offsetLeft + lastspan.offsetWidth}px`;
+		cursor.style.top = `${lastspan.offsetTop}px`;
 	}
+	else {
+		cursor.style.left = `${document.getElementById("currentLine").offsetLeft}px`;
+		cursor.style.top = `${document.getElementById("currentLine").offsetTop}px`;
+	}
+}
+
+document.addEventListener("keydown", (e) => {
+	// if (ended) return;
+	if (ended) return;
+
+    if (
+		e.key === " " && wordNumber > 0 &&
+		(currentWord.textContent.length > 1 || (currentWord.textContent.toLowerCase() == "i" || currentWord.textContent.toLowerCase() == "a"))) {
+		generateWord();
+    }
+	else if (e.key === " " && wordNumber === 0) {
+		generateWord();
+		document.getElementById("cursor").style.display = "block";
+	}
+	
+	if (wordNumber < 1) return;
+
+	if (e.key.length === 1 && e.key != " ") {
+
+		let key = e.key;
+		if (typingAllCaps) {
+			key = key.toUpperCase();
+		} else if (typingAllLowercase) {
+			key = key.toLowerCase();
+		}
+		document.getElementById("currentWord").textContent += key;
+		letters_typed++;
+	}
+	else if (e.key === "Backspace") {
+		if (letters_typed > 0) {
+			document.getElementById("currentWord").textContent = document.getElementById("currentWord").textContent.slice(0, -1);
+			letters_typed--;
+		}
+	}
+	setTimeout(updateCursorPosition, 10);
 });
+
+
+// const titleBox = document.getElementById("title-box");
+// let titleInitialised = false;
+// let titleWordCount = 0;
+// let titleEndCount;
+// function generateTitleWord() {
+// 	if (titleWordCount > 0) currentWord.textContent += ` `;
+// 	letters_typed = 0;
+
+// 	if (!titleInitialised) {
+// 		titleEndCount = Math.floor(Math.random() * 10) + 1;
+// 		titleInitialised = true;
+// 		titleLine = document.createElement("h1");
+// 		document.getElementById("currentLine").removeAttribute("id");
+// 		titleLine.id = "currentLine";
+// 		titleBox.appendChild(titleLine);
+// 	}
+
+// 	titleSpan = document.createElement("span");
+// 	document.getElementById("currentWord").removeAttribute("id");
+// 	titleSpan.id = "currentWord";
+// 	titleLine.appendChild(titleSpan);
+
+// 	let letter = determineChance(alphabet_weighted);
+// 	let cap = determineChance(caps);
+
+// 	if (cap === "UPPERCASE") {
+// 		letter = letter.toUpperCase();
+// 		typingAllCaps = true;
+// 		typingAllLowercase = false;
+// 	} else if (cap === "lowercase") {
+// 		letter = letter.toLowerCase();
+// 		typingAllLowercase = true;
+// 		typingAllCaps = false;
+// 	}
+// 	titleSpan.textContent += letter;
+// 	titleWordCount++;
+// 	if (titleWordCount >= titleEndCount) {
+// 		titled = true;
+// 	}
+// }
+
+// let signing_initialised = false;
+// let signatureWords = 0;
+// function signPoem() {
+// 	typingAllCaps = false;
+// 	typingAllLowercase = false;
+// 	let signatureSpan = document.createElement("span");
+// 	if (signatureWords > 0) signatureSpan.textContent += ``;
+// 	if (!signing_initialised) {
+// 		wordNumber = 0;
+// 		signatureLine = document.createElement("h1");
+// 		document.getElementById("currentLine").removeAttribute("id");
+// 		signatureLine.id = "currentLine";
+// 		titleBox.appendChild(signatureLine);
+// 	}
+// 	document.getElementById("currentWord").removeAttribute("id");
+// 	signatureSpan.id = "currentWord";
+// 	signatureLine.appendChild(signatureSpan);
+// 	if (!signing_initialised) {
+// 		signatureSpan.textContent = "By ";
+// 	}
+// 	signatureWords++;
+// 	wordNumber++;
+// }
