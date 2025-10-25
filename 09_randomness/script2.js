@@ -228,16 +228,25 @@ function updateCursorPosition() {
 	}
 	requestAnimationFrame(updateCursorPosition);
 }
-
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           ('ontouchstart' in window) ||
+           (window.innerWidth <= 768);
+}
 document.addEventListener("keydown", (e) => {
 	// if (ended) return;
 	if (ended) return;
 
 	e.preventDefault();
+	if (!isMobileDevice()) {
+		// console.log("not mobile");
+
 	    window.scrollTo({
         top: document.body.scrollHeight,
         behavior: 'smooth'
-    });
+    	});
+
+	}
 
     if (
 		e.key === " " && wordNumber > 0 &&
