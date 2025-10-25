@@ -28,7 +28,7 @@ const alphabet_weighted = [
 	["z", 0.045]
 ];
 
-const caps = [["UPPERCASE",1], ["lowercase", 1], ["Contextual", 0]];
+const caps = [["UPPERCASE",1], ["lowercase", 8], ["Contextual", 0]];
 const mediums = [["Black", 10], ["Red",0]];
 const nexts = [[``, 70], [",", 10], [".", 10], ["!", 5], ["?", 5]];
 const newlines = [[``, 80], ["New Line", 15], ["New Stanza", 15], ["END", 5]];
@@ -56,7 +56,8 @@ function _ready() {
 }
 
 _ready();
-
+let newsentence = false;
+let words_in_line = 0;
 function generateWord() {
 	// if the poem has ended, don't generate any more words
 
@@ -96,7 +97,21 @@ function generateWord() {
 	///////////////// now dealing with DOM /////////////////
 
 	if (wordNumber > 0) {
+
+		if (newline == `New Line`) {
+			next = determineChance([[",", 10], [".", 10], ["!", 5], ["?", 5], [":", 5]]);
+		}
+		else if (newline == `New Stanza`) {
+			next = determineChance([[`.`, 30], [`!`, 5], [`?`, 5], ["...", 5], ["?!", 2]]);
+		}
+		else if (newline === `END`) {
+			next = determineChance([[`,`, 10], [`.`, 100], [`!`, 5], [`?`, 5], ["...", 5], ["?!", 2]]);
+		}
 		span.textContent += `${next}`;
+
+		if (next == `.` || next == `!` || next == `?` || next == `...` || next == `?!` || next == `:`) {
+			newsentence = true;
+		}
 
 		span = document.createElement("span");
 		text.appendChild(span);
@@ -107,6 +122,8 @@ function generateWord() {
 	}
 
 	if (newline !== `` || wordNumber === 0) {
+
+		words_in_line = 0;
 		
 		// console.log(letter, cap, medium, next);
 		text = document.createElement("h1");
@@ -152,7 +169,15 @@ function generateWord() {
 	text.appendChild(span);
 	document.getElementById("currentWord").removeAttribute("id");
 	span.id = "currentWord";
+
+	if (words_in_line < 1 || newsentence === true) {
+		letter = letter.toUpperCase();
+		console.log("first word of line");
+		newsentence = false;
+	}
 	span.textContent += `${letter}`;
+
+	words_in_line++;
 
 	if (weight === "italics") {
 		span.style.fontStyle = "italic";
