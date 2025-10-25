@@ -284,3 +284,33 @@ document.addEventListener("keydown", (e) => {
 // 	signatureWords++;
 // 	wordNumber++;
 // }
+
+// Focus the hidden input to open mobile keyboard
+function openMobileKeyboard() {
+    const mobileInput = document.getElementById('mobileKeyboard');
+    if (mobileInput) {
+        mobileInput.focus();
+    }
+}
+
+// Call it when you want to open the keyboard
+// For example, when the page loads or when user taps something
+document.addEventListener('DOMContentLoaded', openMobileKeyboard);
+
+// Automatically focus when page loads
+window.addEventListener('load', function() {
+    const mobileInput = document.getElementById('mobileKeyboard');
+    mobileInput.focus();
+});
+
+// Open keyboard when user taps anywhere
+document.addEventListener('touchstart', function() {
+    const mobileInput = document.getElementById('mobileKeyboard');
+    mobileInput.focus();
+});
+
+// Or on click
+document.addEventListener('click', function() {
+    const mobileInput = document.getElementById('mobileKeyboard');
+    mobileInput.focus();
+});
