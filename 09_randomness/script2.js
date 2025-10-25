@@ -95,7 +95,7 @@ function generateWord() {
 
 	///////////////// now dealing with DOM /////////////////
 
-	if (wordNumber > 0) span.textContent += ` `;
+	if (wordNumber > 0) span.textContent += `${next} `;
 
 	if (newline !== `` || wordNumber === 0) {
 		
@@ -200,7 +200,8 @@ document.addEventListener("keydown", (e) => {
 	
 	if (wordNumber < 1) return;
 
-	if (e.key.length === 1 && e.key != " ") {
+	const letterss = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	if (letterss.includes(e.key) && e.key != " ") {
 
 		let key = e.key;
 		if (typingAllCaps) {
