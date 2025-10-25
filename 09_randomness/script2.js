@@ -28,8 +28,8 @@ const alphabet_weighted = [
 	["z", 0.045]
 ];
 
-const caps = [["UPPERCASE",1], ["lowercase", 1], ["Contextual", 1]];
-const mediums = [["Black", 5], ["Red",3], ["Blue", 1]];
+const caps = [["UPPERCASE",1], ["lowercase", 1], ["Contextual", 0]];
+const mediums = [["Black", 10], ["Red",1]];
 const nexts = [[``, 70], [",", 10], [".", 10], ["!", 5], ["?", 5]];
 const newlines = [[``, 80], ["New Line", 15], ["New Stanza", 15], ["END", 5]];
 const textHolder = document.getElementById("textholder");
@@ -95,7 +95,16 @@ function generateWord() {
 
 	///////////////// now dealing with DOM /////////////////
 
-	if (wordNumber > 0) span.textContent += `${next} `;
+	if (wordNumber > 0) {
+		span.textContent += `${next}`;
+
+		span = document.createElement("span");
+		text.appendChild(span);
+		document.getElementById("currentWord").removeAttribute("id");
+		span.id = "currentWord";
+
+		span.textContent += ` `;
+	}
 
 	if (newline !== `` || wordNumber === 0) {
 		
@@ -126,7 +135,15 @@ function generateWord() {
 				ended = true;
 				text.textContent = `END`;
 				document.body.classList.add("ended");
-				generateTitleWord();
+				for (h1 of textHolder.children) {
+					for (span of h1.children) {
+						if (span.style.backgroundColor === "rgba(255, 0, 0, 0.14)") {
+							span.style.backgroundColor = "transparent";
+							span.style.color = "rgb(255, 161, 155)";
+						}
+					}
+				}
+				// generateTitleWord();
 				return;
 			}
 		}
@@ -148,6 +165,13 @@ function generateWord() {
 	} else if (weight === "normal") {
 		span.style.fontWeight = "normal";
 	}
+
+	if (medium === "Red") {
+		span.style.backgroundColor = "rgba(255, 0, 0, 0.14)";
+	}
+	// else if (medium === "Blue") {
+	// 	span.style.backgroundColor = "rgba(87, 87, 255, 0.41)";
+	// }
 
 	wordNumber++;
 
