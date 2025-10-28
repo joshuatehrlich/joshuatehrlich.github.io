@@ -43,6 +43,63 @@ var typingAllLowercase = false;
 
 var letters_typed = 0;
 
+const tutorial = document.getElementById("tutorial");
+
+async function showTutorial() {
+	let tutorialText = tutorial.innerHTML;
+	tutorial.textContent = "";
+	let inCode = false;
+	let codeSpan = "";
+	let addedClass = "normal";
+
+	for (let i = 0; i < tutorialText.length; i++) {
+
+		if (tutorialText[i] === "+") {
+			addedClass = "highlight";
+			continue;
+		} else if (tutorialText[i] === "*") {
+			addedClass = "highlightBold";
+			continue;
+		}
+		else if (tutorialText[i] === "-") {
+			addedClass = "normal";
+			continue;
+		}
+
+		if (tutorialText[i] === "<") {
+			inCode = true;
+		}
+		if (inCode) {
+			codeSpan += tutorialText[i];
+			if (tutorialText[i] === ">") {
+				inCode = false;
+				let span = document.createElement("span");
+				span.innerHTML = codeSpan;
+				tutorial.appendChild(span);
+				span.style.opacity = 0;
+				span.style.transition = "opacity 0.2s";
+				codeSpan = "";
+				continue;
+			}
+			continue;
+		}
+
+		let letter = tutorialText[i];
+		let span = document.createElement("span");
+		span.textContent = letter;
+		span.classList.add(addedClass);
+		tutorial.appendChild(span);
+		span.style.opacity = 0;
+		span.style.transition = "opacity 0.2s";
+	}
+
+	for (let span of tutorial.children) {
+		span.style.opacity = 1;
+		await new Promise(resolve => setTimeout(resolve, 10));
+	}
+}
+
+
 function _ready() {
 	var text = document.createElement("h1");
 	text.id = "currentLine";
@@ -53,6 +110,8 @@ function _ready() {
 	span.id = "currentWord";
 	text.appendChild(span);
 	span.textContent = ` `;
+
+	showTutorial();
 }
 
 _ready();

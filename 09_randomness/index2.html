@@ -8,7 +8,13 @@
 		 <!-- Add this anywhere in your body -->
 <input type="text" id="mobileKeyboard" style="position: absolute; left: -9999px; opacity: 0; pointer-events: none;">
 		<div id="textholder"></div>
-		<h1 id="tutorial">press space to generate the first<br>letter of each word.</h1>
+		<h1 id="tutorial">
+			This is a +collaborative poem creation framework.- The computer will determine the first letter of each word, while you decide the content.
+			
+			<br><br>The computer will determine all punctuation. The computer will determine when the poem should *END.-
+
+			<br><br>Press +space- to generate the first letter of each word.
+		</h1>
 		<div id="cursor"></div>
 		<!-- <div class="howtouse">press space to generate a line</div> -->
 		<script src="script2.js"></script>
@@ -94,20 +100,31 @@
 			#tutorial {
 				position: absolute;
 				display: absolute;
+				text-align: left;
 				/* bottom: 2rem; */
 				/* translate: 0 30vh; */
 				left: 0;
 				right: 0;
 				top: 0;
 				bottom: 0;
-				text-align: center;
+				/* text-align: center; */
 				opacity: 0.5;
-				transition: all 1.0s;
+				transition: opacity 1.0s;
 				/* width: min-content; */
 				height: min-content;
 				margin: auto;
 				font-weight: 100;
 				font-style: italic;
+
+				max-width: 90vw;
+				max-width: 600px;
+			}
+			.highlight {
+				color: rgb(78, 40, 184) !important;
+			}
+			.highlightBold {
+				color: #2c2cff !important;
+				font-weight: bold !important;
 			}
 			h1 span {
 				text-wrap: wrap;
