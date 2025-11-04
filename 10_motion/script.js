@@ -186,7 +186,8 @@ async function renderBoxes() {
 
 		if (_dist <= brush_size) {
 			// box.color = (_color -((10-_dist)/10)*255);
-			stroke((((_dist)/brush_size)*box.color[0]+255)/2 - 20);
+			let closeness = (brush_size-_dist)/brush_size;
+			stroke(closeness*0+(box.color[0]-20)*(1-closeness));
 			// box.color = box.color[0] - ((10-_dist)/10)*255;
 			
 			box.offset[2] = ((brush_size-_dist)*0.1);
