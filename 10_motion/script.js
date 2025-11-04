@@ -4,7 +4,7 @@
 const BOX_SIZE = [20,20,20];
 const BOX_SPACING = [50,25,100];
 const BOX_COLOR = [255];
-
+const EXTENSION = 10;
 
 // DEFINITIONS
 
@@ -35,8 +35,10 @@ function removeBox(position = [0, 0, 0]) {
 function addBoxGrid(position = [0, 0, 0], spacing = BOX_SPACING) {
 	for (let y = -position[1]; y < position[1]; y++) {
 		for (let x = -position[0]; x < position[0]; x++) {
-			for (let z = -position[2]; z < position[2]; z++) {
-				addBox([x, y, z]);
+			if (abs(x) + abs(y) < position[0]) {
+				for (let z = -position[2]; z < position[2]; z++) {
+					addBox([x, y, z]);
+				}
 			}
 		}
 	}
@@ -61,7 +63,10 @@ function createBox(_box = new Box(), spawner_offset = [0, 0, 0]) {
 
 	push();
 
-	fill(_box.color);
+	let depth = 0.5;
+	depth = 0.6-(_box.position[1]+_box.position[0])/70;
+
+	fill(_box.color*(1-depth)+255*depth);
 
 	beginShape();
 	// draw top face, box size is WIDTH, HEIGHT, DEPTH (width is left face)
@@ -71,20 +76,24 @@ function createBox(_box = new Box(), spawner_offset = [0, 0, 0]) {
 	vertex(pos[0] + size, pos[1] - height/2);
 	endShape(CLOSE);
 
-	fill((200+_box.color[0])/2);
+	let impact = 0.1;
+
+	let leftColor = [200*impact+_box.color[0]*(1-impact)];
+	fill(leftColor*(1-depth)+255*depth);
 	beginShape();
 	vertex(pos[0], pos[1]);
 	vertex(pos[0] - size, pos[1] - height/2);
-	vertex(pos[0] - size, pos[1] + height/2 + 1000);
-	vertex(pos[0], pos[1] + height + 1000);
+	vertex(pos[0] - size, 2000);//pos[1] + height/2 + EXTENSION);
+	vertex(pos[0], 2000);//pos[1] + height + EXTENSION);
 	endShape(CLOSE);
 
-	fill((120+_box.color[0])/2);
+	let rightColor = [120*impact+_box.color[0]*(1-impact)];
+	fill(rightColor*(1-depth)+255*depth);
 	beginShape();
 	vertex(pos[0], pos[1]);
 	vertex(pos[0] + size, pos[1] - height/2);
-	vertex(pos[0] + size, pos[1] + height/2 + 1000);
-	vertex(pos[0], pos[1] + height + 1000);
+	vertex(pos[0] + size, 2000);//pos[1] + height/2 + EXTENSION);
+	vertex(pos[0], 2000);//pos[1] + height + EXTENSION);
 	endShape(CLOSE);
 
 	pop();
@@ -117,8 +126,10 @@ function coordToPosition(coord = [0, 0, 0]) {
 }
 
 let target_box = null;
+let brush_size = 10;
 async function renderBoxes() {
 	for (let box of grid) {
+		mouseOver = false;
 		let pos = coordToPosition(box.target_position);
 
 		if (box === grid[0]) {
@@ -135,15 +146,21 @@ async function renderBoxes() {
 			createBox(box);
 			continue;
 		}
+		
+		let _color = sin(box.position[2]/2+2)*127 + 127;
+		box.color = [_color];
 
 		let _dist = getDistanceFromBox(target_box, box);
 
-		if (_dist <= 10) {
-			box.color = [(_dist/10)*255];
-			box.offset[2] = ((10-_dist)*0.1);
+		if (_dist <= brush_size) {
+			// box.color = (_color -((10-_dist)/10)*255);
+			stroke((((_dist)/brush_size)*box.color[0]+255)/2);
+			// box.color = box.color[0] - ((10-_dist)/10)*255;
+			
+			box.offset[2] = ((brush_size-_dist)*0.1);
 		}
 		else {
-			box.color = sin(box.position[2]+2)*127 + 127;
+			noStroke();
 			box.offset[2] = 0;
 		}
 		// if (d <= 100) {
@@ -175,13 +192,14 @@ function sortBoxes() {
 	grid.sort((a, b) => a.position[1] - b.position[1]);
 }
 
+let GRID_SIZE = 20;
 function setup() {
 	createCanvas(windowWidth, windowHeight);
 	clear();
 	background(0);
 	noStroke();
 
-	addBoxGrid([20,20,0.5]);
+	addBoxGrid([GRID_SIZE,GRID_SIZE,0.5]);
 	removeBox([0,0,0]);
 
 	// addBox([1,1,1]);
@@ -193,14 +211,14 @@ function setup() {
 }
 function draw() {
 	clear();
-	background(250);
+	background(255);
 	for (let box of grid) {
 		// box.offset[2] = sin(box.id + (frameCount * 0.05)) * 0.01;
 		box.position[2] = lerp(box.position[2], box.target_position[2] + box.offset[2], 0.1);
 	}
 	renderBoxes();
 
-	if (mouseIsPressed) {
+	if (keyIsDown(32)) {
 		for (let box of grid) {
 			box.target_position[2] += box.offset[2] * 0.2;
 		}
@@ -208,6 +226,42 @@ function draw() {
 		for (let box of grid) {
 			box.target_position[2] -= box.offset[2] * 0.2;
 		}
+	} else if (keyIsDown(17)) {
+		for (let box of grid) {
+			box.target_position[2] = lerp(box.target_position[2], target_box.target_position[2], box.offset[2]);
+		}
+	}
+}
+
+function keyPressed() {
+	if (key === "1") {
+		brush_size = 2.5;
+	} else if (key === "2") {
+		brush_size = 5;
+	} else if (key === "3") {
+		brush_size = 10;
+	} else if (key === "4") {
+		brush_size = 20;
+	} else if (key === "5") {
+		brush_size = 30;
+	} else if (key === "6") {
+		brush_size = 40;
+	} else if (key === "7") {
+		brush_size = 50;
+	} else if (key === "8") {
+		brush_size = 100;
+	} else if (key === "9") {
+		brush_size = 200;
+	} else if (key === "0") {
+		brush_size = 300;
+	} else if (key === "g") {
+		GRID_SIZE += 1;
+		grid = [];
+		setup();
+	} else if (key === "G") {
+		GRID_SIZE -= 1;
+		grid = [];
+		setup();
 	}
 }
 
