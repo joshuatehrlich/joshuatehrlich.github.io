@@ -2,11 +2,11 @@ let vertices = [];
 
 function setup() {
 	createCanvas(windowWidth, windowHeight);
+	background(0);
 }
 
 let a;
 function draw() {
-	background(0);
 	// background(a);
 	// console.log(a);
 
@@ -30,8 +30,8 @@ function mouseMoved() {
 
 	for (let i = 0; i < vertices.length; i++) {
 
-		vertices[i].y += (vertices[i].y - mouseY) * 0.01;
-		vertices[i].x += (vertices[i].x - mouseX) * 0.01;
+		vertices[i].y -= (vertices[i].y - mouseY) * 0.01;
+		vertices[i].x -= (vertices[i].x - mouseX) * 0.01;
 		// console.log(mouseX, mouseY);
 
 		let randomness = 1.0;
