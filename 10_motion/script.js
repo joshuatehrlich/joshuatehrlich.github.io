@@ -55,7 +55,7 @@ function getDistanceFromBox(target_box, box) {
 
 
 // GEOMETRY CREATION AND RENDERING
-
+let _stroke = 190;
 function createBox(_box = new Box(), spawner_offset = [0, 0, 0]) {
 
 	let pos = coordToPosition([_box.position[0] + spawner_offset[0], _box.position[1] + spawner_offset[1], _box.position[2] + spawner_offset[2]]);
@@ -66,11 +66,15 @@ function createBox(_box = new Box(), spawner_offset = [0, 0, 0]) {
 	push();
 
 	let depth = 0.5;
-	depth = 0.6-(_box.position[1]+_box.position[0])/70;
+	depth = 0.6-(_box.position[1]+_box.position[0])/50;
 	let impact = 0.1;
 	let down_blocker = GRID_SIZE*(BOX_SIZE[0]*.5)+650;
 
 	fill(_box.color*(1-depth)+255*depth);
+
+	depth -= 0.3;
+
+	stroke(_stroke*(1-depth)+255*depth);
 
 
 	beginShape();
@@ -187,13 +191,13 @@ async function renderBoxes() {
 		if (_dist <= brush_size) {
 			// box.color = (_color -((10-_dist)/10)*255);
 			let closeness = (brush_size-_dist)/brush_size;
-			stroke(closeness*0+(box.color[0]-20)*(1-closeness));
+			_stroke = closeness*0+(box.color[0]-80)*(1-closeness);
 			// box.color = box.color[0] - ((10-_dist)/10)*255;
 			
 			box.offset[2] = ((brush_size-_dist)*0.1);
 		}
 		else {
-			stroke(box.color[0]-20);
+			_stroke = box.color[0]-80;
 			box.offset[2] = 0;
 		}
 		// if (d <= 100) {
