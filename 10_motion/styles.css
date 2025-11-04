@@ -3,10 +3,111 @@
 }
 :root {
 	font-size: 1rem;
+	font-family: Helvetica, sans-serif;
 }
 
 body {
 	margin: 0;
 	padding: 0;
 	overflow: hidden;
+	cursor: default;
+
+	&.help-hidden {
+		cursor: crosshair;
+	}
+}
+
+.controls {
+	position: absolute;
+	font-size: 0.8rem;
+	top: 0; left: 0;
+	translate: 50vw 50vh;
+	transform: translate(-50%, -50%);
+	color: rgba(0, 0, 0, 0.281);
+	transition: opacity 0.5s;
+	h1, span {
+		padding: 0;
+		margin: 0;
+	}
+	opacity: 1;	
+}
+
+body.help-hidden .controls {
+	opacity: 0;
+}
+body.help-hidden canvas {
+	opacity: 1;
+}
+
+canvas {
+	opacity: 0;
+	transition: opacity 0.5s;
+	z-index: -10;
+}
+
+/* variable for size */
+:root {
+	--brush-size: 30%;
+}
+
+.brush-size {
+
+	opacity: 0;
+	z-index: 20;
+	position: absolute;
+	font-size: 0.8rem;
+	top: 3rem; left: 3rem;
+	height: 100px;
+	width: 100px;
+	border: 5px solid rgba(0, 0, 0, 0.089);
+	border-radius: 100%;
+	color: rgba(0, 0, 0, 0.281);
+	transition: opacity 0.5s;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	.dot {
+		position: relative;
+		height: var(--brush-size);
+		width: var(--brush-size);
+		background-color: rgba(0, 0, 0, 0.212);
+		border-radius: 100%;
+		transition: height 0.5s, width 0.5s;
+	}
+}
+
+.help-button {
+	z-index: 100;
+	opacity: 0;
+	position: absolute;
+	top: 3rem; right: 3rem;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: rgba(0, 0, 0, 0.281);
+	margin: 0; padding: 0;
+	transition: all 0.5s;
+
+	font-size: 3rem;
+
+	pointer-events: all;
+
+	&:hover {
+		scale: 1.1;
+		color: rgba(0, 0, 0, 0.5);
+		cursor: pointer;
+	}
+}
+
+body.help-hidden .brush-size {
+	opacity: 1;
+}
+
+body.help-hidden .help-button {
+	opacity: 1;
+}
+
+span {
+	font-size: 1.6rem;
+	font-weight: 600;
 }
