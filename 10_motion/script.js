@@ -42,6 +42,14 @@ function addBoxGrid(position = [0, 0, 0], spacing = BOX_SPACING) {
 	}
 }
 
+function getDistanceFromBox(target_box, box) {
+	let distance = 0;
+	distance += Math.abs(target_box.position[0] - box.position[0]);
+	distance += Math.abs(target_box.position[1] - box.position[1]);
+	distance += Math.abs(target_box.position[2] - box.position[2]);
+	return distance;
+}
+
 
 // GEOMETRY CREATION AND RENDERING
 
@@ -63,7 +71,7 @@ function createBox(_box = new Box(), spawner_offset = [0, 0, 0]) {
 	vertex(pos[0] + size, pos[1] - height/2);
 	endShape(CLOSE);
 
-	fill(200);
+	fill((200+_box.color[0])/2);
 	beginShape();
 	vertex(pos[0], pos[1]);
 	vertex(pos[0] - size, pos[1] - height/2);
@@ -71,7 +79,7 @@ function createBox(_box = new Box(), spawner_offset = [0, 0, 0]) {
 	vertex(pos[0], pos[1] + height + 1000);
 	endShape(CLOSE);
 
-	fill(120);
+	fill((120+_box.color[0])/2);
 	beginShape();
 	vertex(pos[0], pos[1]);
 	vertex(pos[0] + size, pos[1] - height/2);
@@ -108,6 +116,7 @@ function coordToPosition(coord = [0, 0, 0]) {
 	return [xpos, ypos];
 }
 
+let target_box = null;
 async function renderBoxes() {
 	for (let box of grid) {
 		let pos = coordToPosition(box.target_position);
@@ -117,9 +126,29 @@ async function renderBoxes() {
 		}
 
 		let d = dist(mouseX, mouseY, pos[0], pos[1]);
-		if (d <= 100) {
-			box.offset[2] = (100-d)*0.02;
-		} else { box.offset[2] = 0; }
+		if (d<= 10) {
+			target_box = box;
+			box.color = [0, 0, 0];
+		}
+
+		if (!target_box) {
+			createBox(box);
+			continue;
+		}
+
+		let _dist = getDistanceFromBox(target_box, box);
+
+		if (_dist <= 10) {
+			box.color = [(_dist/10)*255];
+			box.offset[2] = ((10-_dist)*0.1);
+		}
+		else {
+			box.color = sin(box.position[2]+2)*127 + 127;
+			box.offset[2] = 0;
+		}
+		// if (d <= 100) {
+		// 	box.offset[2] = (100-d)*0.02;
+		// } else { box.offset[2] = 0; }
 		createBox(box);
 		// await new Promise(resolve => setTimeout(resolve, 5));
 	}
@@ -160,7 +189,7 @@ function setup() {
 	// addBox([-1,0,0]);
 	// renderBoxes();
 	sortBoxes();
-	// cullBoxes();
+	cullBoxes();
 }
 function draw() {
 	clear();
@@ -173,11 +202,11 @@ function draw() {
 
 	if (mouseIsPressed) {
 		for (let box of grid) {
-			box.target_position[2] += box.offset[2] * 0.1;
+			box.target_position[2] += box.offset[2] * 0.2;
 		}
 	} else if (keyIsDown(SHIFT)) {
 		for (let box of grid) {
-			box.target_position[2] -= box.offset[2] * 0.1;
+			box.target_position[2] -= box.offset[2] * 0.2;
 		}
 	}
 }
