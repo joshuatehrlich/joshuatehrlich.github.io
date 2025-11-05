@@ -332,36 +332,12 @@ function toggleHelp() {
 	}
 }
 
-// This code is mostly fine for attaching a click event to the help button that toggles help.
-// However, a possible issue is if the element with class `.help-button` does not exist (e.g., the DOM hasn't finished loading yet),
-// help_button would be `null`, leading to an error when calling `addEventListener` on it.
-// A safer version would ensure the element is present before attaching the event:
-
-
 document.addEventListener("DOMContentLoaded", function() {
 	document.querySelector("h1.help-button").addEventListener("click", function() {
 		toggleHelp();
 	});
 	showTutorial(document.querySelector(".controls"));
 });
-
-// function mouseClicked() {
-// 	for (let box of grid) {
-// 		box.target_position[2] += box.offset[2];
-// 	}
-// }
-
-
-// function keyPressed() {
-// 	console.log(key);
-// 	if (key === "Shift") {
-// 		// Save the current canvas with a unique name based on frameCount
-// 		for (let box of grid) {
-// 			box.target_position[2] -= box.offset[2];
-// 		}
-// 	}
-// 	console.log("saved");
-// }
 
 // create a fake 3d environment using shapes with repeated stroke that acts as topographical lines
 // 
