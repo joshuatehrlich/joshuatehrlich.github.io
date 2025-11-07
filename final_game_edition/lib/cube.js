@@ -17,6 +17,7 @@ export class Cube {
 		this.mesh.position.copy(position);
 		this.mesh.castShadow = true;
 		this.mesh.receiveShadow = true;
+		this.material.transparent = true;
 		
 		// WIREFRAME
 		const edges = new THREE.EdgesGeometry(this.geometry);
@@ -44,6 +45,14 @@ export class Cube {
 		this.wireframe = new LineSegments2(lineGeometry, lineMaterial);
 		this.wireframe.position.copy(position);
 		this.wireframe.computeLineDistances();
+
+	}
+	
+	setColor(color) { this.material.color.set(color); }
+
+	updatePosition(speed = 0.1, target_position = this.target_position) {
+		this.mesh.position.lerp(target_position, speed);
+		this.wireframe.position.lerp(target_position, speed);
 	}
 }
 
@@ -66,9 +75,13 @@ export class CubeSpace {
 		const spacing = 1;
 		for (let x = -size.x / 2; x < size.x / 2 + 1; x++) {
 				for (let z = -size.z / 2; z < size.z / 2 + 1; z++) {
+					let wall = 0;
+					if (x > 2) {
+						wall = -0.5;
+					}
 					this.addCube(vec3(
 						spacing *(x),
-						spacing *(size.y),
+						spacing *(Math.sin(x*z*0.2)*0.2 + Math.random()*0.3 + wall),
 						spacing *(z)));
 				}
 		}
