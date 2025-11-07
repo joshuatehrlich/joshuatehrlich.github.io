@@ -81,7 +81,7 @@ export class CubeSpace {
 					}
 					this.addCube(vec3(
 						spacing *(x),
-						spacing *(Math.sin(x*z*0.2)*0.2 + Math.random()*0.3 + wall),
+						spacing *(Math.sin(x*z*0.2)*0.2 + Math.random()*0.2 + wall),
 						spacing *(z)));
 				}
 		}

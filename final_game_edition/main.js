@@ -49,7 +49,7 @@ window.addEventListener('keydown', (event) => {
 		player.position.x += player.speed;
 		player.cube.target_position.x += player.speed;
 	}
-    else if (event.key == 'w') {
+    else if (event.key == 'a') {
         player.position.x -= player.speed;
         player.cube.target_position.x -= player.speed;
     }
@@ -57,7 +57,7 @@ window.addEventListener('keydown', (event) => {
         player.position.z += player.speed;
         player.cube.target_position.z += player.speed;
     }
-    else if (event.key == 'e') {
+    else if (event.key == 'w') {
         player.position.z -= player.speed;
         player.cube.target_position.z -= player.speed;
     }
@@ -76,7 +76,7 @@ window.addEventListener('click', (event) => {
 
 const levelSpace = new CUBE.CubeSpace();
 
-levelSpace.addGrid();
+levelSpace.addGrid(vec3(50, 0, 50));
 levelSpace.render(scene);
 
 // This should just apply to every single cubespace that's active. they should be stored in an array.
@@ -132,13 +132,13 @@ function animate() {
             let distanceToHovered = ((Math.abs(standingCube.target_position.x - cube.target_position.x))+(Math.abs(standingCube.target_position.z - cube.target_position.z))+(Math.abs(standingCube.target_position.y - cube.target_position.y)))/3;
             let distanceColor = new THREE.Color(0x000000);
             distanceColor.setHSL(0, 0, (distanceToHovered));
-            cube.target_position.y = cube.true_position.y - Math.max((1-(distanceToHovered))*0.2,0) + Math.sin(frame_count*0.01 + cube.mesh.position.x*0.2 + cube.mesh.position.z*0.2)*0.1;
+            cube.target_position.y = cube.true_position.y - Math.max((1-(distanceToHovered))*0.2,0) + Math.sin(frame_count*0.01 + cube.mesh.position.x*0.2 + cube.mesh.position.z*0.2)*0.3;
             cube.setColor(distanceColor);
         }
 
 
         let heightColor = new THREE.Color(0x000000);
-        heightColor.setHSL(0, 0, 1.0+(cube.mesh.position.y*4));
+        heightColor.setHSL(0, 0, 1.0+((cube.mesh.position.y)*4));
 
         const trueCameraPosition = vec3(cameraGroup.position.x+camera.position.x, cameraGroup.position.y+camera.position.y, cameraGroup.position.z+camera.position.z);
         const distanceToCamera = trueCameraPosition.distanceTo(cube.mesh.position);
