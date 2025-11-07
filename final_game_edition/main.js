@@ -12,20 +12,22 @@ scene.background = new THREE.Color( 0xffffff );
 
 const renderer = RENDERER.createRenderer();
 
-const camera = CAM.createCamera(renderer);
-const controls = CAM.createControls(camera, renderer);
 
 LIGHTS.createLights(scene);
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
+const canvas = document.querySelector('canvas');
+const rect = canvas.getBoundingClientRect();
+
 function onMouseMove(event) {
-    // Convert mouse position to normalized device coordinates (-1 to +1)
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 }
 
+const camera = CAM.createCamera(renderer, rect.width, rect.height);
+const controls = CAM.createControls(camera, renderer);
 // PLAYER
 
 class Player {

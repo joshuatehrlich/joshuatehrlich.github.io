@@ -6,6 +6,18 @@
     <title>Game Edition</title>
 </head>
 <body>
+    <div class="textbox">
+        <p>the ocean moved for no one
+        <br><br>
+        you'd like to leave here
+        <br><br>
+        <br><br>
+        <br><br>
+        <br><br>
+        <br><br>
+        water: 1
+        </p>
+    </div>
 </body>
 <script type="importmap">
     {
@@ -21,6 +33,36 @@
     body {
         margin: 0;
         overflow: hidden;
+    }
+    canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 70% !important;
+        height: 100%;
+        border-right: 2px solid black;
+    }
+    .textbox {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 30% !important;
+        height: 100%;
+        background-color: rgb(31, 31, 31);
+
+
+        display: flex;
+        justify-content: center;
+        align-items: start;
+        flex-direction: column;
+
+    }
+    .textbox p {
+        /* fo */
+        margin: 30px;
+        padding: 0;
+        font-size: 1.1rem;
+        color: rgb(235, 235, 235);
     }
 </style>
 
