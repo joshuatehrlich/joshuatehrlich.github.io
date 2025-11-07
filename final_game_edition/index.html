@@ -7,15 +7,7 @@
 </head>
 <body>
     <div class="textbox">
-        <p>the ocean moved for no one
-        <br><br>
-        you'd like to leave here
-        <br><br>
-        <br><br>
-        <br><br>
-        <br><br>
-        <br><br>
-        water: 1
+        <p>the ocean moved for no one. you'd like to leave here, you think.<br><br>water: 1
         </p>
     </div>
 </body>
@@ -33,32 +25,37 @@
     body {
         margin: 0;
         overflow: hidden;
+        background-color: rgb(0, 0, 0);
     }
     canvas {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 70% !important;
-        height: 100%;
-        border-right: 2px solid black;
+        top: 10%;
+        left: 0; right: 0;
+        margin: auto;
+        height: 70% !important;
+        width: 60% !important;
+        /* aspect-ratio: 17/9 !important; */
+        /* border: 2px solid rgba(255, 255, 255, 0.514); */
     }
     .textbox {
         position: absolute;
-        top: 0;
+        top: 84%;
         right: 0;
-        width: 30% !important;
-        height: 100%;
-        background-color: rgb(31, 31, 31);
+        left: 0;
+        /* bottom: 10%; */
+        width: 100% !important;
+        height: 10%;
 
 
         display: flex;
         justify-content: center;
-        align-items: start;
+        align-items: center;
         flex-direction: column;
 
     }
     .textbox p {
         /* fo */
+        text-align: center;
         margin: 30px;
         padding: 0;
         font-size: 1.1rem;
