@@ -42,12 +42,15 @@ class Player {
 
 		this.cube = this.space.cubes[0];
 
-		this.flavor_text = 'the ocean moved for no one.';
+		this.flavor_text = `
+		Remile, alone, leaned on the masthead, and watched the ocean.
+		`;
 		this.supplies = 1;
 	}
 }
 
 const player = new Player();
+let m_visits = 0;
 
 window.addEventListener('keydown', (event) => {
 	let player_moved = true;
@@ -61,13 +64,6 @@ window.addEventListener('keydown', (event) => {
 		player.position.z -= player.speed;
 	} else {
 		player_moved = false;
-	}
-
-	if (player_moved) {
-		player.supplies--;
-	}
-	if (player.supplies < 0) {
-		gameOver();
 	}
 
 	// efficiently get player cube
@@ -87,13 +83,40 @@ window.addEventListener('keydown', (event) => {
 	} else if (playerCube.text == '*') {
 		player.flavor_text = `The travelled ocean is kind.`;
 	} else if (playerCube.text == 'M') {
-		player.flavor_text = `
+		if (m_visits == 0) {
+			player.flavor_text = `
 			The man waits on a rock.
 			He calls out to you: "SAILOR!"
 			You're not sure what to say. He wears a cap,
-			and waves a tattered flag.`;
+			and waves a tattered flag.
+			Despite his oddness, he kicks supplies into the water
+			from the crag. You gather them, gratefully. He reminds
+			you of your father, or your uncle, or your brother.`;
+			player.supplies += 10;
+		} else if (m_visits == 1) {
+			player.flavor_text = `
+			The man has left here, though a pittance remains.`;
+			player.supplies += 4;
+		} else {
+			player.flavor_text = `An empty abode.`;
+		}
+		m_visits++;
+	} else if (playerCube.text == 'R') {
+		player.flavor_text = `
+			The roaring see takes what it can, and leaves what it chooses.
+			You have not been chosen.
+			`;
+		supplies == 0;
 	} else {
 		player.flavor_text = playerCube.text;
+	}
+	if (player_moved) {
+		if (playerCube.text !== '*') {
+			player.supplies--;
+		}
+	}
+	if (player.supplies < 0) {
+		gameOver();
 	}
 
 	updateStats();
