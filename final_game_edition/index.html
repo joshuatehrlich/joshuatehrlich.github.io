@@ -7,10 +7,8 @@
 	</head>
 	<body>
 		<div class="textbox">
-			<p>
-				the ocean moved for no one. you'd like to leave here, you
-				think.<br /><br />water: 1
-			</p>
+			<p id="flavor"></p>
+			<p id="stats"></p>
 		</div>
 	</body>
 	<script type="importmap">
@@ -52,7 +50,7 @@
 		}
 		.textbox {
 			position: absolute;
-			top: 84%;
+			top: 78%;
 			right: 0;
 			left: 0;
 			/* bottom: 10%; */
@@ -67,10 +65,25 @@
 		.textbox p {
 			/* font-family: 'Georgia', monospace; */
 			text-align: center;
-			margin: 30px;
+			/* margin: 30px; */
 			padding: 0;
 			font-size: 1.1rem;
 			color: rgb(235, 235, 235);
+		}
+		#gameover {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			color: white;
+
+			font-size: 1.2rem;
+
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
 		}
 	</style>
 </html>

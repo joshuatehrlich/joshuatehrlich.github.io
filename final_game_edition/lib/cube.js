@@ -4,7 +4,7 @@ import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/addons/lines/LineSegments2.js';
 import { vec3 } from './utils.js';
 
-function createTextTexture(text, fontSize = 64) {
+function createTextTexture(text, fontSize = 64, color = '#444444') {
 	const canvas = document.createElement('canvas');
 	const context = canvas.getContext('2d');
 
@@ -15,7 +15,7 @@ function createTextTexture(text, fontSize = 64) {
 	// context.fillRect(0, 0, canvas.width, canvas.height);
 
 	context.font = `${fontSize}px Times New Roman`;
-	context.fillStyle = '#444444';
+	context.fillStyle = color;
 	context.textAlign = 'center';
 	context.textBaseline = 'middle';
 	context.fillText(text, canvas.width / 2, canvas.height / 2);
@@ -32,7 +32,7 @@ export class Cube {
 		size = vec3(1, 10, 1),
 		color = 0xffffff,
 		lineWidth = 3,
-		text = 'A'
+		text = ' '
 	) {
 		this.geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
 		this.material = new THREE.MeshStandardMaterial({ color: color });
@@ -109,6 +109,11 @@ export class Cube {
 	updateText(text) {
 		this.text = text;
 		const textTexture = createTextTexture(text);
+		this.textMaterial.map = textTexture;
+	}
+
+	updateTextColor(color) {
+		const textTexture = createTextTexture(this.text, 64, color);
 		this.textMaterial.map = textTexture;
 	}
 }

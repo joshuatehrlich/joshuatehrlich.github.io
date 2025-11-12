@@ -41,26 +41,69 @@ class Player {
 		this.space.render(scene);
 
 		this.cube = this.space.cubes[0];
+
+		this.flavor_text = 'the ocean moved for no one.';
+		this.supplies = 1;
 	}
 }
 
 const player = new Player();
 
 window.addEventListener('keydown', (event) => {
+	let player_moved = true;
 	if (event.key == 'd') {
 		player.position.x += player.speed;
-		// player.cube.target_position.x += player.speed;
 	} else if (event.key == 'a') {
 		player.position.x -= player.speed;
-		// player.cube.target_position.x -= player.speed;
 	} else if (event.key == 's') {
 		player.position.z += player.speed;
-		// player.cube.target_position.z += player.speed;
 	} else if (event.key == 'w') {
 		player.position.z -= player.speed;
-		// player.cube.target_position.z -= player.speed;
+	} else {
+		player_moved = false;
 	}
+
+	if (player_moved) {
+		player.supplies--;
+	}
+	if (player.supplies < 0) {
+		gameOver();
+	}
+
+	// efficiently get player cube
+	let playerCube = null;
+	for (let cube of levelSpace.cubes) {
+		if (
+			cube.target_position.x == player.position.x &&
+			cube.target_position.z == player.position.z
+		) {
+			playerCube = cube;
+			break;
+		}
+	}
+
+	if (playerCube.text == ' ') {
+		player.flavor_text = 'The ocean moved for no one.';
+	} else if (playerCube.text == '*') {
+		player.flavor_text = `The travelled ocean is kind.`;
+	} else if (playerCube.text == 'M') {
+		player.flavor_text = `
+			The man waits on a rock.
+			He calls out to you: "SAILOR!"
+			You're not sure what to say. He wears a cap,
+			and waves a tattered flag.`;
+	} else {
+		player.flavor_text = playerCube.text;
+	}
+
+	updateStats();
 });
+
+function updateStats() {
+	const stats = document.getElementById('stats');
+	stats.textContent = `supplies: ${player.supplies}`;
+	flavor.textContent = player.flavor_text;
+}
 
 window.addEventListener('click', (event) => {
 	if (selectedCube) {
@@ -68,6 +111,17 @@ window.addEventListener('click', (event) => {
 		player.position.z = selectedCube.target_position.z;
 	}
 });
+
+function gameOver() {
+	document.querySelector('canvas').style.display = 'none';
+	document.querySelector('.textbox').style.display = 'none';
+	// create h1
+	const h1 = document.createElement('h1');
+	h1.textContent =
+		'Death by lack of supplies comes from afar. Remiles sees it coming, but is shaken by their lack of peace upon its arrival.';
+	h1.id = 'gameover';
+	document.body.appendChild(h1);
+}
 
 // child camera to player
 
@@ -94,6 +148,65 @@ scene.add(cameraGroup);
 
 let selectedCube = null;
 let frame_count = 0;
+
+let map = `
+----------
+------C---
+----------
+--O-------
+----------
+-------M--
+----------
+--------R-
+---C------
+----------
+`;
+
+// Remove empty lines
+let map_array = map
+	.split('\n')
+	.filter((line) => line.length > 0)
+	.map((row) => row.split(''));
+
+console.log('Map height:', map_array.length);
+console.log('Map width:', map_array[0].length);
+
+function getMapChar(x, z) {
+	// Convert world coordinates to array indices
+	// Assuming world center (0,0) maps to map center
+	const mapHeight = map_array.length;
+	const mapWidth = map_array[0].length;
+
+	// Convert from world coords (centered at 0,0) to array indices (0 to size-1)
+	const arrayZ = Math.round(z + mapHeight / 2);
+	const arrayX = Math.round(x + mapWidth / 2);
+
+	// Check boundaries
+	if (arrayZ < 0 || arrayZ >= mapHeight || arrayX < 0 || arrayX >= mapWidth) {
+		return ' ';
+	}
+
+	return map_array[arrayZ][arrayX];
+}
+
+// Test: center of map
+console.log('At (0, 0):', getMapChar(0, 0)); // Should be '-' or whatever is at the center
+console.log('At (4, -4):', getMapChar(4, -4)); // Should be 'C'
+console.log('At (-3, -2):', getMapChar(-3, -2)); // Should be 'O'
+
+for (let cube of levelSpace.cubes) {
+	let char = getMapChar(
+		Math.round(cube.true_position.x),
+		Math.round(cube.true_position.z)
+	);
+	if (char == '-') {
+		cube.updateText(' ');
+	} else {
+		cube.updateText(char);
+	}
+}
+
+updateStats();
 
 // ANIMATION LOOP
 function animate() {
@@ -200,6 +313,9 @@ function animate() {
 		if (cube == standingCube) {
 			final_color.setHSL(0, 0, 0.0);
 			cube.target_position.y += 0.55;
+			if (cube.text == ' ') {
+				cube.updateText('*');
+			}
 		}
 
 		cube.setColor(final_color);
