@@ -1,66 +1,76 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Edition</title>
-</head>
-<body>
-    <div class="textbox">
-        <p>the ocean moved for no one. you'd like to leave here, you think.<br><br>water: 1
-        </p>
-    </div>
-</body>
-<script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-        }
-    }
-</script>
-<script type="module" src="main.js"></script>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Game Edition</title>
+	</head>
+	<body>
+		<div class="textbox">
+			<p>
+				the ocean moved for no one. you'd like to leave here, you
+				think.<br /><br />water: 1
+			</p>
+		</div>
+	</body>
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+				"three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+			}
+		}
+	</script>
+	<script type="module" src="main.js"></script>
 
-<style>
-    body {
-        margin: 0;
-        overflow: hidden;
-        background-color: rgb(0, 0, 0);
-    }
-    canvas {
-        position: absolute;
-        top: 10%;
-        left: 0; right: 0;
-        margin: auto;
-        height: 70% !important;
-        width: 60% !important;
-        /* aspect-ratio: 17/9 !important; */
-        /* border: 2px solid rgba(255, 255, 255, 0.514); */
-    }
-    .textbox {
-        position: absolute;
-        top: 84%;
-        right: 0;
-        left: 0;
-        /* bottom: 10%; */
-        width: 100% !important;
-        height: 10%;
+	<style>
+		body {
+			margin: 0;
+			overflow: hidden;
+			background-color: rgb(0, 0, 0);
+		}
+		canvas {
+			position: absolute;
+			top: 10%;
+			left: 0;
+			right: 0;
+			margin: auto;
+			height: 60% !important;
+			width: 100% !important;
+			/* width: 100% !important; */
+			/* aspect-ratio: 17/9 !important; */
+			/* border: 2px solid rgba(255, 255, 255, 0.514); */
+			/* animation: canvasAnim 10s backwards !important; */
+		}
+		@keyframes canvasAnim {
+			0% {
+				width: 40% !important;
+			}
+			100% {
+				width: 100% !important;
+			}
+		}
+		.textbox {
+			position: absolute;
+			top: 84%;
+			right: 0;
+			left: 0;
+			/* bottom: 10%; */
+			width: 100% !important;
+			height: 10%;
 
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-
-    }
-    .textbox p {
-        /* fo */
-        text-align: center;
-        margin: 30px;
-        padding: 0;
-        font-size: 1.1rem;
-        color: rgb(235, 235, 235);
-    }
-</style>
-
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
+		}
+		.textbox p {
+			/* font-family: 'Georgia', monospace; */
+			text-align: center;
+			margin: 30px;
+			padding: 0;
+			font-size: 1.1rem;
+			color: rgb(235, 235, 235);
+		}
+	</style>
 </html>
